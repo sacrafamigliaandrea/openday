@@ -1030,6 +1030,10 @@ function ntfyRelay(sub, pub, onText, onChange) {
 
 // collegamento firmato su tutti i relay. role: 'show' (Mac) ascolta i comandi, 'remote' (iPhone) lo stato.
 async function remoteLink(code, role, onMsg, onStatus) {
+  // le connessioni sempre aperte partono a pagina caricata: aperte prima, Safari considera
+  // la pagina "ancora in caricamento" per sempre (rotellina che non si ferma)
+  if (document.readyState !== 'complete') await new Promise(r => addEventListener('load', r, {once: true}));
+  await new Promise(r => setTimeout(r, 50));
   const key = await crypto.subtle.importKey('raw', ENC.encode('od|' + code), {name: 'HMAC', hash: 'SHA-256'}, false, ['sign']);
   const base = 'od-' + hex(await crypto.subtle.digest('SHA-256', ENC.encode('od-canale|' + code))).slice(0, 24);
   const sub = base + (role === 'show' ? '-c' : '-s'), pub = base + (role === 'show' ? '-s' : '-c');
