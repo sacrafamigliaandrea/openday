@@ -19,10 +19,10 @@
                                           → 3a pressione: la camera entra nella parola "digitale"
        5·1–5·9   intervento sul digitale: OGNI PAROLA CHIAVE COMPARE SOLO ALLA PRESSIONE
                  (nessuna comparsa a tempo, così voce e schermo restano allineati):
-                 digitale in famiglia · l'iPad, accesso al mondo digitale condiviso in famiglia ·
-                 accompagniamo studenti e genitori · da ludico a didattico ·
-                 la Galassia delle web app didattiche (solo il concetto) · e l'intelligenza artificiale? ·
-                 il nuovo fuoco (padre Benanti) · scalda / brucia · supervisione umana
+                 digitale in famiglia · Primaria (iMac, laboratorio) e Secondaria (iMac + iPad, laboratorio
+                 e classe) · Cittadinanza Digitale · da ludico a didattico · e l'intelligenza artificiale? ·
+                 il nuovo fuoco (padre Benanti, Festival della Mente di Sarzana) · scalda / brucia ·
+                 supervisione umana · la Galassia delle web app didattiche (solo il concetto)
     6  iscrizioni entro il 6 novembre (conto alla rovescia automatico)
     7  visitare il nostro campus
        nero finale
@@ -33,13 +33,17 @@
     Le due finestre si comandano a vicenda (postMessage). Serve l'Apple TV come "monitor separato":
     presentazione a tutto schermo sul televisore, vista relatore sul MacBook.
 
-  TELECOMANDO iPHONE (online attraverso ntfy.sh: nessun account, nessuna configurazione, nessun server nostro)
+  TELECOMANDO iPHONE (nessun account, nessuna configurazione, nessun server nostro)
     MacBook: https://openday-ten.vercel.app/?canale=CODICE      (va bene anche il file locale + internet)
     iPhone:  https://openday-ten.vercel.app/?telecomando=CODICE (stesso CODICE: 6-48 lettere/numeri, - o _)
-    L'iPhone mostra Avanti / Indietro / Schermo nero + cosa c'è a schermo, cosa arriva dopo, la traccia.
-    Messaggi in diretta (SSE), non conservati sul server. Limiti ntfy.sh: 250 messaggi/giorno per IP,
-    una presentazione intera ne usa ~30 per dispositivo. Spia nei comandi: verde collegato, ambra no.
-    Se la rete cade, tastiera e telecomando Bluetooth continuano a funzionare.
+    L'iPhone mostra Avanti / Indietro / Schermo nero + cosa c'è a schermo, cosa arriva dopo, la traccia,
+    e quante "vie" sono attive. Ogni messaggio viaggia IN PARALLELO su 4 relay pubblici: ntfy.sh e i
+    broker MQTT di HiveMQ, EMQX e Mosquitto (client MQTT scritto qui, senza librerie): basta che ne
+    funzioni uno (il 16/10 ntfy.sh è andato a singhiozzo). Canale = impronta SHA-256 del codice,
+    messaggi firmati HMAC con il codice, validi 15 s: chi spia i broker non può comandare le slide.
+    Ritardo misurato: 0,06–0,14 s con tutte le vie, ~0,2–0,4 s con il solo ntfy.
+    ntfy.sh concede 250 messaggi/giorno per IP: una presentazione intera ne usa ~30 per dispositivo.
+    Spia nei comandi: verde collegato, ambra no. Tastiera e telecomando Bluetooth funzionano sempre.
 
   COMANDI
     Avanti ........ → · Spazio · Pag↓ · Invio · clic · pulsante giallo · telecomando
@@ -400,8 +404,20 @@ body.vid-title .wait-card{opacity:1}
 .y{font-style:normal;color:var(--yellow)}
 .q{font-size:118px;font-weight:700;line-height:1.16;margin:0;translate:var(--x,0) 0}
 .device{position:relative;width:900px;height:640px}
-.device.sm{width:760px;height:540px}
-.device.sm .ipad{font-size:212px}
+/* 5·2 · Primaria / Secondaria: iMac e iPad disegnati con la luce */
+.tech-top{position:absolute;top:150px;left:0;right:0}
+.tcol{position:absolute;top:270px;translate:-50% 0;display:flex;flex-direction:column;align-items:center}
+.thead{font-size:60px;font-weight:700;line-height:1.1;margin:0 0 24px;color:#fff;white-space:nowrap}
+.tdev{position:relative}
+.tdev svg{position:absolute;overflow:visible;filter:drop-shadow(0 0 16px rgba(140,190,255,.5))}
+.tdev .frame{stroke:rgba(235,243,255,.92);stroke-width:3.5}
+.tdev .screen{stroke:rgba(160,195,255,.38);stroke-width:1.5}
+.tdev .dot{fill:rgba(235,243,255,.85)}
+.tname{position:absolute;margin:0;text-align:center;translate:0 -50%;font-weight:300;letter-spacing:-.01em;line-height:1;color:#DCE7F8}
+.tname.on .sheen{animation:sheen 2.6s ease-in-out forwards;animation-delay:calc(var(--base) + var(--d,0s) + .4s)}
+.tcap{font-size:56px;font-weight:300;margin:30px 0 0;white-space:nowrap}
+.tdiv{position:absolute;left:887px;top:300px;width:2px;height:560px;background:linear-gradient(180deg,rgba(248,216,48,0),rgba(248,216,48,.6),rgba(248,216,48,0))}
+.flash.at{inset:auto;left:var(--fx);top:var(--fy);width:900px;height:900px;margin:-450px 0 0 -450px}
 .books{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .books .label{margin-bottom:10px}
 .libri{font-size:230px;font-weight:300;margin:0;line-height:1;color:#D6E2F5;letter-spacing:.01em}
@@ -441,6 +457,7 @@ body.vid-title .wait-card{opacity:1}
 .credit::before{content:'';width:56px;height:2px;background:var(--amber);margin-bottom:18px}
 .credit b{font-size:46px;font-weight:700;color:#FFF3E0}
 .credit span{font-size:30px;font-weight:300;color:rgba(255,236,214,.82);letter-spacing:.02em}
+.credit .src{font-size:27px;font-style:italic;color:var(--amber)}
 .warm{color:#FFE3C0;text-shadow:0 0 50px rgba(255,140,40,.45)}
 .warm em{font-style:normal;color:var(--amber)}
 .burn{color:#FFD2A0;margin-top:26px}
@@ -719,36 +736,63 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- 5·2 · l'iPad: lo strumento che apre il mondo digitale, condiviso in famiglia (2 pressioni) -->
+  <!-- 5·2 · il digitale a scuola: Primaria (iMac, laboratorio) · Secondaria (iMac + iPad, laboratorio e classe) -->
   <section class="scene" data-mood="device" data-slide="5"
-    data-show="iPad · l’accesso al mondo digitale|condiviso in famiglia"
-    data-say="Alla secondaria entra in casa l’iPad: lo strumento che apre l’accesso al mondo digitale…|…condiviso in famiglia.">
+    data-show="Primaria: iMac · Laboratorio — Secondaria: iMac + iPad · Laboratorio e Classe"
+    data-say="In primaria il digitale si incontra in laboratorio, con l’iMac. Alla secondaria arriva l’iPad: laboratorio e classe.">
     <div class="cam">
-      <div class="device sm">
-        <svg class="draw" style="--d:.15s" viewBox="0 0 900 640" aria-hidden="true">
-          <path class="ln frame" pathLength="1" d="M52,4 H848 A48,48 0 0 1 896,52 V588 A48,48 0 0 1 848,636 H52 A48,48 0 0 1 4,588 V52 A48,48 0 0 1 52,4 Z"/>
-          <path class="ln screen" pathLength="1" d="M54,38 H846 A16,16 0 0 1 862,54 V586 A16,16 0 0 1 846,602 H54 A16,16 0 0 1 38,586 V54 A16,16 0 0 1 54,38 Z"/>
-          <circle class="dot" cx="450" cy="21" r="4.5"/>
-        </svg>
-        <p class="ipad rise" style="--d:.55s"><span class="sheen">iPad</span></p>
+      <p class="label rise tech-top"><span>l’accesso al mondo digitale</span></p>
+
+      <div class="tcol" style="left:560px">
+        <p class="thead rise" style="--d:.2s">Scuola Primaria</p>
+        <div class="tdev" style="width:460px;height:422px">
+          <svg class="draw" style="--d:.35s;left:0;top:0;width:460px;height:422px" viewBox="0 0 460 422" aria-hidden="true">
+            <path class="ln frame" pathLength="1" d="M18,0 H442 A18,18 0 0 1 460,18 V312 A18,18 0 0 1 442,330 H18 A18,18 0 0 1 0,312 V18 A18,18 0 0 1 18,0 Z"/>
+            <path class="ln screen" pathLength="1" d="M22,16 H438 A6,6 0 0 1 444,22 V258 A6,6 0 0 1 438,264 H22 A6,6 0 0 1 16,258 V22 A6,6 0 0 1 22,16 Z"/>
+            <path class="ln frame" pathLength="1" d="M200,330 L188,402 H272 L260,330"/>
+            <path class="ln frame" pathLength="1" d="M150,402 H310 A8,8 0 0 1 310,418 H150 A8,8 0 0 1 150,402 Z"/>
+          </svg>
+          <p class="tname rise" style="--d:.9s;left:0;width:460px;top:140px;font-size:76px">iMac</p>
+        </div>
+        <p class="tcap rise" style="--d:1s">Laboratorio</p>
       </div>
-      <p class="label below rise" style="--d:1.1s"><span>l’accesso al mondo digitale</span></p>
-      <p class="h2 lite rise" data-step="1">condiviso in <em class="y">famiglia</em></p>
+
+      <i class="tdiv rise" style="--d:.6s"></i>
+
+      <div class="tcol" style="left:1330px">
+        <p class="thead rise" style="--d:1s">Scuola Secondaria</p>
+        <div class="tdev" style="width:690px;height:422px">
+          <svg class="draw" style="--d:1.15s;left:0;top:0;width:460px;height:422px" viewBox="0 0 460 422" aria-hidden="true">
+            <path class="ln frame" pathLength="1" d="M18,0 H442 A18,18 0 0 1 460,18 V312 A18,18 0 0 1 442,330 H18 A18,18 0 0 1 0,312 V18 A18,18 0 0 1 18,0 Z"/>
+            <path class="ln screen" pathLength="1" d="M22,16 H438 A6,6 0 0 1 444,22 V258 A6,6 0 0 1 438,264 H22 A6,6 0 0 1 16,258 V22 A6,6 0 0 1 22,16 Z"/>
+            <path class="ln frame" pathLength="1" d="M200,330 L188,402 H272 L260,330"/>
+            <path class="ln frame" pathLength="1" d="M150,402 H310 A8,8 0 0 1 310,418 H150 A8,8 0 0 1 150,402 Z"/>
+          </svg>
+          <p class="tname rise" style="--d:1.6s;left:0;width:460px;top:140px;font-size:76px">iMac</p>
+          <svg class="draw" style="--d:1.6s;left:480px;top:128px;width:210px;height:290px" viewBox="0 0 210 290" aria-hidden="true">
+            <path class="ln frame" pathLength="1" d="M20,0 H190 A20,20 0 0 1 210,20 V270 A20,20 0 0 1 190,290 H20 A20,20 0 0 1 0,270 V20 A20,20 0 0 1 20,0 Z"/>
+            <path class="ln screen" pathLength="1" d="M18,14 H192 A6,6 0 0 1 198,20 V270 A6,6 0 0 1 192,276 H18 A6,6 0 0 1 12,270 V20 A6,6 0 0 1 18,14 Z"/>
+            <circle class="dot" cx="105" cy="7" r="3.5"/>
+          </svg>
+          <p class="tname rise" style="--d:1.9s;left:480px;width:210px;top:273px;font-size:58px"><span class="sheen">iPad</span></p>
+        </div>
+        <p class="tcap rise" style="--d:2.3s">Laboratorio e <em class="y">Classe</em></p>
+      </div>
     </div>
-    <div class="streak" style="--d:.1s;--y:40%"></div>
-    <div class="flash" style="--d:.2s"></div>
+    <div class="streak" style="--d:1.55s;--y:58.6%"></div>
+    <div class="flash at" style="--d:1.6s;--fx:1570px;--fy:633px"></div>
   </section>
 
-  <!-- 5·3 · accompagniamo studenti e genitori (2 pressioni) -->
-  <section class="scene" data-mood="care" data-slide="5"
-    data-show="nella nostra scuola secondaria · accompagniamo studenti e genitori|a un uso consapevole del digitale"
-    data-say="Nella nostra scuola secondaria accompagniamo studenti e genitori…|…a un uso consapevole del digitale.">
+  <!-- 5·3 · Cittadinanza Digitale: il percorso per studenti e genitori -->
+  <section class="scene" data-mood="final" data-slide="5"
+    data-show="percorso per studenti e genitori · Cittadinanza Digitale"
+    data-say="Nella nostra scuola secondaria accompagniamo studenti e genitori a un uso consapevole del digitale: è il nostro percorso di Cittadinanza Digitale.">
     <div class="cam">
-      <p class="label rise"><span>nella nostra scuola secondaria</span></p>
-      <h2 class="h1 words" style="--d:.1s;--stag:.08s">accompagniamo</h2>
-      <h2 class="h1 words" style="--d:.35s;--stag:.08s">studenti e <em class="y">genitori</em></h2>
-      <p class="h2 lite rise" data-step="1">a un uso <strong>consapevole</strong> del digitale</p>
+      <p class="label rise"><span>percorso per studenti e genitori</span></p>
+      <h2 class="title-a track" style="--d:.15s;--ls:.03em;--ls0:.45em">Cittadinanza</h2>
+      <h2 class="title-b rise" style="--d:.5s"><em class="y">Digitale</em></h2>
     </div>
+    <div class="streak" style="--d:.55s;--y:52%"></div>
   </section>
 
   <!-- 5·4 · la sfida: da ludico a didattico (2 pressioni) -->
@@ -765,10 +809,57 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- 5·5 · la Galassia delle web app didattiche: solo il concetto (4 pressioni) -->
+  <!-- 5·5 · e l'intelligenza artificiale? (2 pressioni) -->
+  <section class="scene" data-mood="suspense" data-bars="1" data-slide="5"
+    data-show="e come gestire l’intelligenza artificiale?|la fate usare ai vostri figli?"
+    data-say="E come gestire l’intelligenza artificiale?|La fate usare ai vostri figli?">
+    <div class="cam">
+      <p class="h1 lite words" style="--stag:.1s">e come gestire</p>
+      <p class="h1 words" style="--d:.35s;--stag:.1s">l’intelligenza <em class="y">artificiale</em>?</p>
+      <p class="h2 ia rise" data-step="1">la fate usare ai vostri <strong>figli</strong>?</p>
+    </div>
+  </section>
+
+  <!-- 5·6 · il nuovo fuoco · padre Benanti, Festival della Mente di Sarzana (2 pressioni) -->
+  <section class="scene" data-mood="fire" data-bars="1" data-slide="5"
+    data-show="intelligenza artificiale · il nuovo fuoco|Padre Paolo Benanti · «Custodire il fuoco» · Festival della Mente, Sarzana"
+    data-say="L’intelligenza artificiale è il nuovo fuoco nelle mani dell’uomo…|…come ha detto padre Paolo Benanti aprendo il Festival della Mente di Sarzana, il 4 settembre, con la lezione «Custodire il fuoco».">
+    <div class="cam">
+      <p class="label amber rise"><span>intelligenza artificiale</span></p>
+      <h2 class="fire rise" style="--d:.25s"><span class="glow" aria-hidden="true">il nuovo fuoco</span><span class="txt">il nuovo fuoco</span></h2>
+      <div class="credit rise" data-step="1">
+        <b>Padre Paolo Benanti</b>
+        <span>teologo francescano · esperto di etica dell’Intelligenza Artificiale</span>
+        <span class="src">«Custodire il fuoco» · Festival della Mente · Sarzana, 4 settembre 2026</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5·7 · scalda / brucia (2 pressioni) -->
+  <section class="scene" data-mood="fire|burn" data-bars="1" data-slide="5"
+    data-show="un fuoco che scalda|ma che può bruciare"
+    data-say="Un fuoco che scalda…|…ma che può bruciare.">
+    <div class="cam">
+      <p class="h1 warm words" style="--stag:.1s">un fuoco che <em>scalda</em></p>
+      <p class="h1 burn rise" data-step="1">ma che può <em>bruciare</em></p>
+    </div>
+  </section>
+
+  <!-- 5·8 · supervisione umana (2 pressioni) -->
+  <section class="scene" data-mood="ring" data-bars="1" data-slide="5"
+    data-show="supervisione umana|per farne un uso vantaggioso"
+    data-say="La supervisione umana è fondamentale…|…per farne un uso vantaggioso.">
+    <div class="cam">
+      <p class="label rise"><span>fondamentale</span></p>
+      <h2 class="h1 xl words" style="--d:.1s;--stag:.1s">supervisione <em class="y">umana</em></h2>
+      <p class="h2 lite rise" data-step="1">per farne un uso vantaggioso</p>
+    </div>
+  </section>
+
+  <!-- 5·9 · la Galassia delle web app didattiche: solo il concetto (4 pressioni) -->
   <section class="scene" data-mood="galaxy" data-gx="bang|bang|map|map" data-slide="5"
     data-show="la galassia nasce (nessuna scritta)|La Galassia delle web app didattiche|ogni stella è una web app didattica · ogni costellazione è una disciplina|171 web app · 11 costellazioni"
-    data-say="Per l’uso didattico, qui a scuola abbiamo costruito…|…la Galassia delle web app didattiche.|Ogni stella è una web app didattica, ogni costellazione è una disciplina.|171 web app in 11 costellazioni: tutte progettate e costruite qui, per i nostri studenti.">
+    data-say="Ed è per questo che, per i nostri studenti, qui a scuola abbiamo costruito…|…la Galassia delle web app didattiche.|Ogni stella è una web app didattica, ogni costellazione è una disciplina.|171 web app in 11 costellazioni: tutte progettate, costruite e verificate qui, per i nostri studenti.">
     <div class="cam">
       <div class="gtitle">
         <p class="label rise" data-step="1" style="--d:.3s"><span>costruita per i nostri studenti</span></p>
@@ -786,52 +877,6 @@ body.remote-on #rstat{background:#3BC47A}
       </div>
     </div>
     <div class="flash" style="--d:.5s"></div>
-  </section>
-
-  <!-- 5·6 · e l'intelligenza artificiale? (2 pressioni) -->
-  <section class="scene" data-mood="suspense" data-bars="1" data-slide="5"
-    data-show="e come gestire l’intelligenza artificiale?|la fate usare ai vostri figli?"
-    data-say="E come gestire l’intelligenza artificiale?|La fate usare ai vostri figli?">
-    <div class="cam">
-      <p class="h1 lite words" style="--stag:.1s">e come gestire</p>
-      <p class="h1 words" style="--d:.35s;--stag:.1s">l’intelligenza <em class="y">artificiale</em>?</p>
-      <p class="h2 ia rise" data-step="1">la fate usare ai vostri <strong>figli</strong>?</p>
-    </div>
-  </section>
-
-  <!-- 5·7 · il nuovo fuoco · padre Benanti (2 pressioni) -->
-  <section class="scene" data-mood="fire" data-bars="1" data-slide="5"
-    data-show="intelligenza artificiale · il nuovo fuoco|Padre Paolo Benanti"
-    data-say="C’è chi parla dell’intelligenza artificiale come del nuovo fuoco nelle mani dell’uomo…|…è padre Paolo Benanti, francescano, esperto di etica dell’IA, unico italiano nel comitato ONU sull’intelligenza artificiale.">
-    <div class="cam">
-      <p class="label amber rise"><span>intelligenza artificiale</span></p>
-      <h2 class="fire rise" style="--d:.25s"><span class="glow" aria-hidden="true">il nuovo fuoco</span><span class="txt">il nuovo fuoco</span></h2>
-      <div class="credit rise" data-step="1">
-        <b>Padre Paolo Benanti</b>
-        <span>teologo francescano · esperto di etica dell’Intelligenza Artificiale</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5·8 · scalda / brucia (2 pressioni) -->
-  <section class="scene" data-mood="fire|burn" data-bars="1" data-slide="5"
-    data-show="un fuoco che scalda|ma che può bruciare"
-    data-say="Un fuoco che scalda…|…ma che può bruciare.">
-    <div class="cam">
-      <p class="h1 warm words" style="--stag:.1s">un fuoco che <em>scalda</em></p>
-      <p class="h1 burn rise" data-step="1">ma che può <em>bruciare</em></p>
-    </div>
-  </section>
-
-  <!-- 5·9 · supervisione umana (2 pressioni) -->
-  <section class="scene" data-mood="ring" data-bars="1" data-slide="5"
-    data-show="supervisione umana|per farne un uso vantaggioso"
-    data-say="La supervisione umana è fondamentale…|…per farne un uso vantaggioso.">
-    <div class="cam">
-      <p class="label rise"><span>fondamentale</span></p>
-      <h2 class="h1 xl words" style="--d:.1s;--stag:.1s">supervisione <em class="y">umana</em></h2>
-      <p class="h2 lite rise" data-step="1">per farne un uso vantaggioso</p>
-    </div>
   </section>
 
   <!-- ═══ 6 · ISCRIZIONI ═══ -->
@@ -916,14 +961,104 @@ const scenes = $$('.scene');
 const A = window.ASSETS || {img: {}, video: null};
 const ANIM = '.rise,.words,.track,.scatter,.streak,.flash,.draw,.grow,.subj,.plate,.lum,.gleam,.halo,.wipe,.arrow,.pbeam,.phoneglow,.startbtn';
 
-// telecomando iPhone: Mac e iPhone si parlano attraverso ntfy.sh (servizio pubblico, nessun account,
-// nessuna configurazione). Dal codice canale nascono due argomenti privati: uno per i comandi, uno per lo stato.
-// ?cache=no: i messaggi non vengono conservati sul server. ?ntfy= solo per le prove con un server simulato.
+// telecomando iPhone: Mac e iPhone si parlano attraverso PIÙ relay pubblici in parallelo, senza account
+// né configurazione: ntfy.sh (SSE + POST) e tre broker MQTT su WebSocket. Ogni messaggio parte su tutti;
+// chi riceve lo usa una volta sola (id) → basta che funzioni UN relay (ntfy.sh il 16/10 è andato a singhiozzo).
+// Sicurezza (sui broker MQTT chiunque può vedere i nomi dei canali):
+//   - il canale è un'impronta SHA-256 del codice, non il codice;
+//   - ogni messaggio è firmato con HMAC-SHA256 del codice → impossibile inventare comandi senza conoscerlo;
+//   - un messaggio vale 15 s ed è eseguito una volta sola → inutile ripeterlo.
+// Prove: ?ntfy=URL sostituisce ntfy.sh, ?mqtt=0 esclude i broker MQTT.
 const QS = new URLSearchParams(location.search);
 const NTFY = QS.get('ntfy') || 'https://ntfy.sh';
+const MQTT = QS.get('mqtt') === '0' ? [] :
+  ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081/mqtt'];
 const COMANDI = ['next', 'prev', 'black'];
-const topics = c => /^[A-Za-z0-9_-]{6,48}$/.test(c || '') ? {cmd: `${NTFY}/od-${c}-c`, st: `${NTFY}/od-${c}-s`} : null;
-const publish = (url, text) => fetch(url + '?cache=no&firebase=no', {method: 'POST', body: text});
+const validCode = c => /^[A-Za-z0-9_-]{6,48}$/.test(c || '');
+const ENC = new TextEncoder(), DEC = new TextDecoder();
+const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+
+// client MQTT 3.1.1 minimo su WebSocket (CONNECT, SUBSCRIBE QoS 0, PUBLISH QoS 0, PINGREQ), senza librerie
+function mqttRelay(url, sub, pub, onText, onChange) {
+  let ws = null, up = false, ping = null, wait = 2000;
+  const str = t => { const b = ENC.encode(t); return [b.length >> 8, b.length & 255, ...b]; };
+  const vlen = n => { const o = []; do { let d = n % 128; n = Math.floor(n / 128); if (n) d |= 128; o.push(d); } while (n); return o; };
+  const pkt = (h, body) => new Uint8Array([h, ...vlen(body.length), ...body]);
+  const set = v => { if (up !== v) { up = v; onChange(); } };
+  function open() {
+    try { ws = new WebSocket(url, 'mqtt'); } catch (e) { return setTimeout(open, wait); }
+    ws.binaryType = 'arraybuffer';
+    let buf = new Uint8Array(0);
+    ws.onopen = () => ws.send(pkt(0x10, [...str('MQTT'), 4, 2, 0, 30, ...str('od' + Math.random().toString(36).slice(2, 12))]));
+    ws.onmessage = e => {
+      const add = new Uint8Array(e.data), all = new Uint8Array(buf.length + add.length);
+      all.set(buf); all.set(add, buf.length); buf = all;
+      for (;;) {
+        let i = 1, mul = 1, rl = 0, d;
+        do { if (i >= buf.length) return; d = buf[i++]; rl += (d & 127) * mul; mul *= 128; } while (d & 128);
+        if (buf.length < i + rl) return;
+        const head = buf[0], body = buf.slice(i, i + rl);
+        buf = buf.slice(i + rl);
+        const type = head >> 4;
+        if (type === 2 && body[1] === 0) ws.send(pkt(0x82, [0, 1, ...str(sub), 0]));          // CONNACK → SUBSCRIBE
+        else if (type === 9) {                                                                 // SUBACK: pronti
+          wait = 2000; set(true);
+          clearInterval(ping); ping = setInterval(() => { if (ws.readyState === 1) ws.send(new Uint8Array([0xC0, 0])); }, 25000);
+        } else if (type === 3) {                                                               // PUBLISH in arrivo
+          const tl = (body[0] << 8) | body[1], qos = (head >> 1) & 3;
+          onText(DEC.decode(body.subarray(2 + tl + (qos ? 2 : 0))));
+        }
+      }
+    };
+    ws.onclose = () => { clearInterval(ping); set(false); setTimeout(open, wait); wait = Math.min(wait * 2, 15000); };
+    ws.onerror = () => { try { ws.close(); } catch (e) {} };
+  }
+  open();
+  return {get up() { return up; }, publish: t => { if (up && ws.readyState === 1) ws.send(pkt(0x30, [...str(pub), ...ENC.encode(t)])); }};
+}
+
+// relay ntfy.sh: ascolto SSE, invio con POST (?cache=no: niente conservato sul server)
+function ntfyRelay(sub, pub, onText, onChange) {
+  let up = false;
+  const es = new EventSource(`${NTFY}/${sub}/sse`);
+  es.onopen = () => { up = true; onChange(); };
+  es.onerror = () => { up = false; onChange(); };
+  es.onmessage = e => { try { const d = JSON.parse(e.data); if (d.event === 'message') onText(d.message); } catch (x) {} };
+  return {get up() { return up; },
+    publish: t => fetch(`${NTFY}/${pub}?cache=no&firebase=no`, {method: 'POST', body: t}).catch(() => {})};
+}
+
+// collegamento firmato su tutti i relay. role: 'show' (Mac) ascolta i comandi, 'remote' (iPhone) lo stato.
+async function remoteLink(code, role, onMsg, onStatus) {
+  const key = await crypto.subtle.importKey('raw', ENC.encode('od|' + code), {name: 'HMAC', hash: 'SHA-256'}, false, ['sign']);
+  const base = 'od-' + hex(await crypto.subtle.digest('SHA-256', ENC.encode('od-canale|' + code))).slice(0, 24);
+  const sub = base + (role === 'show' ? '-c' : '-s'), pub = base + (role === 'show' ? '-s' : '-c');
+  const sign = async t => hex(await crypto.subtle.sign('HMAC', key, ENC.encode(t))).slice(0, 32);
+  const seen = new Set();
+  async function receive(text) {
+    let m;
+    try { m = JSON.parse(text); } catch (e) { return; }
+    if (!m || typeof m.id !== 'string' || seen.has(m.id) || Math.abs(Date.now() - m.ts) > 15000) return;
+    if (m.sig !== await sign(`${m.k}|${JSON.stringify(m.v)}|${m.id}|${m.ts}`)) return;
+    if (seen.has(m.id)) return;                       // arrivato intanto da un altro relay
+    seen.add(m.id);
+    onMsg(m.k, m.v);
+  }
+  const relays = [];
+  let last = -1;
+  const change = () => { const n = relays.filter(r => r.up).length; if (n !== last) { last = n; onStatus(n, relays.length); } };
+  relays.push(ntfyRelay(sub, pub, receive, change));
+  MQTT.forEach(u => relays.push(mqttRelay(u, sub, pub, receive, change)));
+  return {
+    up: () => relays.filter(r => r.up).length,
+    async send(k, v) {
+      const id = Math.random().toString(36).slice(2, 10) + Date.now().toString(36), ts = Date.now();
+      const text = JSON.stringify({k, v, id, ts, sig: await sign(`${k}|${JSON.stringify(v)}|${id}|${ts}`)});
+      relays.forEach((r, i) => { if (r.up || i === 0) r.publish(text); });   // a ntfy si prova anche senza ascolto attivo
+      return relays.some(r => r.up);
+    }
+  };
+}
 
 // stessa pagina aperta con ?relatore (finestra sul Mac) o ?telecomando=CANALE (iPhone)
 // → solo la vista relatore, niente animazioni, video o audio
@@ -947,26 +1082,30 @@ function presenter() {
   const opener = window.opener;
   let send, hello;
   if (tele) {
-    // iPhone → ntfy → presentazione: un messaggio per pressione; lo stato arriva in diretta (SSE)
-    const T = topics(tele);
-    let lastTap = 0, pending = 0;
+    // iPhone → relay (ntfy + MQTT, in parallelo) → presentazione; lo stato torna in diretta
+    let lastTap = 0, pending = 0, link = null, vie = '';
     const warn = txt => { const pl = $('#pLink'); pl.classList.add('off'); pl.textContent = txt; };
     send = msg => {
-      if (!T) return;
+      if (!link) return;
       const t = performance.now();
       if (t - lastTap < 350) return;                  // niente doppi tocchi involontari
       lastTap = t; pending = t;
-      publish(T.cmd, msg.cmd).then(r => { if (!r.ok) throw 0; })
-        .catch(() => { pending = 0; warn('comando NON inviato: controlla la rete'); });
+      link.send('cmd', msg.cmd).then(ok => { if (!ok) { pending = 0; warn('comando NON inviato: nessuna connessione'); } });
     };
-    if (!T) warn('codice non valido: 6-48 lettere, numeri, - o _');
+    if (!validCode(tele)) warn('codice non valido: 6-48 lettere, numeri, - o _');
     else {
-      const es = new EventSource(T.st + '/sse');
-      es.onopen = () => publish(T.cmd, 'hello').catch(() => {});   // chiede lo stato attuale alla presentazione
-      es.onerror = () => warn('connessione persa: riprovo…');
-      es.onmessage = e => {
-        try { const m = JSON.parse(e.data); if (m.event === 'message') { pending = 0; render(JSON.parse(m.message)); } } catch (x) {}
-      };
+      let helloT = null;
+      remoteLink(tele, 'remote', (k, v) => {
+        if (k !== 'state') return;
+        pending = 0;
+        render(v);
+        $('#pLink').textContent = 'collegata · ' + vie;
+      }, (n, tot) => {
+        vie = `${n}/${tot} vie`;
+        if (!n) { warn('nessuna connessione: riprovo…'); return; }
+        // appena si apre una via, chiede lo stato alla presentazione (una sola richiesta)
+        clearTimeout(helloT); helloT = setTimeout(() => link && link.send('hello', 1), 500);
+      }).then(l => { link = l; }).catch(() => warn('questo browser non supporta il collegamento sicuro'));
       // una pressione senza risposta: la presentazione non sta ascoltando
       setInterval(() => {
         if (pending && performance.now() - pending > 3500) { pending = 0; warn('la presentazione non risponde: sul Mac apri ?canale=' + tele); }
@@ -1871,47 +2010,48 @@ addEventListener('message', e => {
 
 /* ═════════ TELECOMANDO DALL'iPHONE ═════════
    Sul Mac: index.html?canale=CODICE · sull'iPhone: index.html?telecomando=CODICE (stesso codice).
-   La presentazione resta in ascolto (una connessione SSE sempre aperta, nessuna interrogazione
-   periodica) e pubblica il suo stato solo quando cambia o quando il telecomando lo chiede ("hello").
-   Una presentazione intera costa ~30 messaggi per dispositivo: ntfy.sh ne concede 250 al giorno per IP.
+   La presentazione resta in ascolto su tutti i relay (ntfy.sh + 3 broker MQTT, vedi remoteLink) e
+   pubblica il suo stato solo quando cambia o quando il telecomando lo chiede ("hello").
+   ntfy.sh concede 250 messaggi al giorno per IP: una presentazione intera ne usa ~30 per dispositivo.
    Se la rete cade, la presentazione continua a funzionare da tastiera e telecomando Bluetooth. */
 const Relay = (() => {
-  const T = topics(QS.get('canale'));
-  if (!T) return {state() {}};
+  const code = QS.get('canale');
+  if (!validCode(code)) return {state() {}};
   body.classList.add('remote');
-  const seen = new Set(), queue = [];
-  let ok = null, sent = '';
-  function status(on) {
-    if (on === ok) return;
-    ok = on;
+  const queue = [];
+  let link = null, sent = '', ok = null;
+  function status(n, tot) {
+    const on = n > 0;
     body.classList.toggle('remote-on', on);
-    if (cur === 0) toast(on ? 'telecomando collegato' : 'telecomando non raggiungibile');   // avvisi solo prima di iniziare
+    $('#rstat').title = `telecomando iPhone: ${n}/${tot} vie attive`;
+    if (on !== ok && cur === 0) toast(on ? `telecomando collegato (${n}/${tot} vie)` : 'telecomando non raggiungibile');   // avvisi solo prima di iniziare
+    if (on && !ok) { sent = ''; setTimeout(state, 300); }
+    ok = on;
   }
-  const es = new EventSource(T.cmd + '/sse');         // si ricollega da solo se la rete cade
-  es.onopen = () => { status(true); sent = ''; state(); };
-  es.onerror = () => status(false);
-  es.onmessage = e => {
-    let m;
-    try { m = JSON.parse(e.data); } catch (x) { return; }
-    if (m.event !== 'message' || seen.has(m.id)) return;
-    seen.add(m.id);
-    if (Date.now() / 1000 - m.time > 15) return;      // comando vecchio (es. dopo un buco di rete): ignorato
-    if (m.message === 'hello') { sent = ''; state(); }
-    else if (COMANDI.includes(m.message)) queue.push(m.message);
-  };
-  // comandi arrivati insieme: eseguiti distanziati, altrimenti il filtro anti doppia pressione li scarterebbe
-  setInterval(() => {
-    const cmd = queue.shift();
-    if (!cmd) return;
-    Music.unlock();
-    if (cmd === 'next') next(); else if (cmd === 'prev') prev(); else if (cmd === 'black') toggleBlack();
-  }, 340);
+  remoteLink(code, 'show', (k, v) => {
+    if (k === 'hello') { sent = ''; state(); }
+    else if (k === 'cmd' && COMANDI.includes(v)) { queue.push(v); drain(); }
+  }, status).then(l => { link = l; state(); }).catch(() => {});
+  // un comando si esegue subito; se ne arriva un altro troppo vicino viene distanziato di 340 ms,
+  // altrimenti il filtro anti doppia pressione lo scarterebbe
+  let lastRun = 0, timer = null;
+  function drain() {
+    if (timer || !queue.length) return;
+    timer = setTimeout(() => {
+      timer = null;
+      const cmd = queue.shift();
+      lastRun = performance.now();
+      Music.unlock();
+      if (cmd === 'next') next(); else if (cmd === 'prev') prev(); else if (cmd === 'black') toggleBlack();
+      drain();
+    }, Math.max(0, lastRun + 340 - performance.now()));
+  }
   function state() {
-    if (!ok) return;
-    const s = JSON.stringify({cur, step, black: body.classList.contains('black')});
+    if (!link || !link.up()) return;
+    const v = {cur, step, black: body.classList.contains('black')}, s = JSON.stringify(v);
     if (s === sent) return;
     sent = s;
-    publish(T.st, s).catch(() => {});
+    link.send('state', v);
   }
   return {state};
 })();
