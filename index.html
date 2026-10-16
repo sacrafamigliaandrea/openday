@@ -33,11 +33,12 @@
     Le due finestre si comandano a vicenda (postMessage). Serve l'Apple TV come "monitor separato":
     presentazione a tutto schermo sul televisore, vista relatore sul MacBook.
 
-  TELECOMANDO iPHONE (online, attraverso la funzione api/telecomando.js + Upstash Redis su Vercel)
+  TELECOMANDO iPHONE (online attraverso ntfy.sh: nessun account, nessuna configurazione, nessun server nostro)
     MacBook: https://openday-ten.vercel.app/?canale=CODICE      (va bene anche il file locale + internet)
-    iPhone:  https://openday-ten.vercel.app/?telecomando=CODICE (stesso CODICE: 6-64 lettere/numeri)
+    iPhone:  https://openday-ten.vercel.app/?telecomando=CODICE (stesso CODICE: 6-48 lettere/numeri, - o _)
     L'iPhone mostra Avanti / Indietro / Schermo nero + cosa c'è a schermo, cosa arriva dopo, la traccia.
-    Ritardo tipico 0,2–0,4 s. Spia nei comandi della presentazione: verde collegato, ambra no.
+    Messaggi in diretta (SSE), non conservati sul server. Limiti ntfy.sh: 250 messaggi/giorno per IP,
+    una presentazione intera ne usa ~30 per dispositivo. Spia nei comandi: verde collegato, ambra no.
     Se la rete cade, tastiera e telecomando Bluetooth continuano a funzionare.
 
   COMANDI
@@ -915,10 +916,14 @@ const scenes = $$('.scene');
 const A = window.ASSETS || {img: {}, video: null};
 const ANIM = '.rise,.words,.track,.scatter,.streak,.flash,.draw,.grow,.subj,.plate,.lum,.gleam,.halo,.wipe,.arrow,.pbeam,.phoneglow,.startbtn';
 
-// telecomando iPhone: relay /api/telecomando (funzione Vercel + Upstash Redis).
-// Online usa il relay dello stesso sito; da file locale usa quello pubblicato. ?relay= solo per le prove.
+// telecomando iPhone: Mac e iPhone si parlano attraverso ntfy.sh (servizio pubblico, nessun account,
+// nessuna configurazione). Dal codice canale nascono due argomenti privati: uno per i comandi, uno per lo stato.
+// ?cache=no: i messaggi non vengono conservati sul server. ?ntfy= solo per le prove con un server simulato.
 const QS = new URLSearchParams(location.search);
-const RELAY = QS.get('relay') || (location.protocol === 'https:' ? '/api/telecomando' : 'https://openday-ten.vercel.app/api/telecomando');
+const NTFY = QS.get('ntfy') || 'https://ntfy.sh';
+const COMANDI = ['next', 'prev', 'black'];
+const topics = c => /^[A-Za-z0-9_-]{6,48}$/.test(c || '') ? {cmd: `${NTFY}/od-${c}-c`, st: `${NTFY}/od-${c}-s`} : null;
+const publish = (url, text) => fetch(url + '?cache=no&firebase=no', {method: 'POST', body: text});
 
 // stessa pagina aperta con ?relatore (finestra sul Mac) o ?telecomando=CANALE (iPhone)
 // → solo la vista relatore, niente animazioni, video o audio
@@ -942,25 +947,31 @@ function presenter() {
   const opener = window.opener;
   let send, hello;
   if (tele) {
-    // iPhone → relay → presentazione. Lo stato si rilegge ogni secondo, ogni 250 ms subito dopo una pressione.
-    let fast = 0, lastTap = 0;
+    // iPhone → ntfy → presentazione: un messaggio per pressione; lo stato arriva in diretta (SSE)
+    const T = topics(tele);
+    let lastTap = 0, pending = 0;
+    const warn = txt => { const pl = $('#pLink'); pl.classList.add('off'); pl.textContent = txt; };
     send = msg => {
+      if (!T) return;
       const t = performance.now();
       if (t - lastTap < 350) return;                  // niente doppi tocchi involontari
-      lastTap = t; fast = t + 2500;
-      fetch(RELAY, {method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify({c: tele, cmd: msg.cmd})})
-        .then(r => { if (!r.ok) throw 0; })
-        .catch(() => { const pl = $('#pLink'); pl.classList.add('off'); pl.textContent = 'comando NON inviato: controlla la rete'; });
+      lastTap = t; pending = t;
+      publish(T.cmd, msg.cmd).then(r => { if (!r.ok) throw 0; })
+        .catch(() => { pending = 0; warn('comando NON inviato: controlla la rete'); });
     };
-    (async function loop() {
-      try {
-        const r = await fetch(`${RELAY}?ruolo=remote&c=${encodeURIComponent(tele)}`, {cache: 'no-store'});
-        const d = await r.json();
-        // la presentazione ripubblica lo stato almeno ogni 10 s: se è più vecchio, non è collegata
-        if (d.state && d.now - d.state.t < 25000) render(d.state);
-      } catch (e) {}
-      setTimeout(loop, performance.now() < fast ? 250 : 1000);
-    })();
+    if (!T) warn('codice non valido: 6-48 lettere, numeri, - o _');
+    else {
+      const es = new EventSource(T.st + '/sse');
+      es.onopen = () => publish(T.cmd, 'hello').catch(() => {});   // chiede lo stato attuale alla presentazione
+      es.onerror = () => warn('connessione persa: riprovo…');
+      es.onmessage = e => {
+        try { const m = JSON.parse(e.data); if (m.event === 'message') { pending = 0; render(JSON.parse(m.message)); } } catch (x) {}
+      };
+      // una pressione senza risposta: la presentazione non sta ascoltando
+      setInterval(() => {
+        if (pending && performance.now() - pending > 3500) { pending = 0; warn('la presentazione non risponde: sul Mac apri ?canale=' + tele); }
+      }, 500);
+    }
     hello = () => {};
     // lo schermo dell'iPhone non deve spegnersi durante l'intervento
     let lock = null;
@@ -1023,12 +1034,12 @@ function presenter() {
       const s = Math.floor((Date.now() - t0) / 1000);
       $('#pTimer').textContent = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
     }
+    if (tele) return;                                 // il telecomando ha i suoi avvisi (sopra)
     const gap = performance.now() - last;
     if (gap > 2000) hello();                          // battito: la presentazione risponde con lo stato
     if (gap > 5000) {
       const pl = $('#pLink'); pl.classList.add('off');
-      pl.textContent = tele ? 'presentazione non collegata: sul Mac apri ?canale=' + tele
-        : opener ? 'in attesa della presentazione' : 'apri questa vista dalla presentazione (tasto R)';
+      pl.textContent = opener ? 'in attesa della presentazione' : 'apri questa vista dalla presentazione (tasto R)';
     }
   }, 1000);
   hello();
@@ -1860,35 +1871,34 @@ addEventListener('message', e => {
 
 /* ═════════ TELECOMANDO DALL'iPHONE ═════════
    Sul Mac: index.html?canale=CODICE · sull'iPhone: index.html?telecomando=CODICE (stesso codice).
-   La presentazione chiede al relay ogni 300 ms se ci sono comandi nuovi e pubblica il suo stato
-   a ogni passo (e comunque ogni 10 s, così il telecomando sa che è collegata).
+   La presentazione resta in ascolto (una connessione SSE sempre aperta, nessuna interrogazione
+   periodica) e pubblica il suo stato solo quando cambia o quando il telecomando lo chiede ("hello").
+   Una presentazione intera costa ~30 messaggi per dispositivo: ntfy.sh ne concede 250 al giorno per IP.
    Se la rete cade, la presentazione continua a funzionare da tastiera e telecomando Bluetooth. */
 const Relay = (() => {
-  const c = QS.get('canale');
-  if (!c) return {state() {}};
+  const T = topics(QS.get('canale'));
+  if (!T) return {state() {}};
   body.classList.add('remote');
-  let seq = null, ok = null, sent = '';
-  const queue = [];
+  const seen = new Set(), queue = [];
+  let ok = null, sent = '';
   function status(on) {
     if (on === ok) return;
     ok = on;
     body.classList.toggle('remote-on', on);
     if (cur === 0) toast(on ? 'telecomando collegato' : 'telecomando non raggiungibile');   // avvisi solo prima di iniziare
   }
-  (async function poll() {
-    try {
-      const r = await fetch(`${RELAY}?ruolo=show&c=${encodeURIComponent(c)}${seq === null ? '' : '&dopo=' + seq}`, {cache: 'no-store'});
-      if (!r.ok) throw 0;
-      const d = await r.json();
-      if (seq !== null) d.cmds.forEach(x => queue.push(x.cmd));
-      seq = d.seq;
-      if (!ok) sent = '';                             // appena (ri)collegati, ripubblica lo stato
-      status(true);
-      state();
-    } catch (e) { status(false); }
-    // durante avvio e attesa basta un controllo ogni 1,2 s (meno richieste al piano gratuito di Upstash)
-    setTimeout(poll, !ok ? 2000 : cur <= 1 ? 1200 : 300);
-  })();
+  const es = new EventSource(T.cmd + '/sse');         // si ricollega da solo se la rete cade
+  es.onopen = () => { status(true); sent = ''; state(); };
+  es.onerror = () => status(false);
+  es.onmessage = e => {
+    let m;
+    try { m = JSON.parse(e.data); } catch (x) { return; }
+    if (m.event !== 'message' || seen.has(m.id)) return;
+    seen.add(m.id);
+    if (Date.now() / 1000 - m.time > 15) return;      // comando vecchio (es. dopo un buco di rete): ignorato
+    if (m.message === 'hello') { sent = ''; state(); }
+    else if (COMANDI.includes(m.message)) queue.push(m.message);
+  };
   // comandi arrivati insieme: eseguiti distanziati, altrimenti il filtro anti doppia pressione li scarterebbe
   setInterval(() => {
     const cmd = queue.shift();
@@ -1896,13 +1906,12 @@ const Relay = (() => {
     Music.unlock();
     if (cmd === 'next') next(); else if (cmd === 'prev') prev(); else if (cmd === 'black') toggleBlack();
   }, 340);
-  setInterval(() => { sent = ''; state(); }, 10000);  // segnale di presenza per il telecomando
   function state() {
     if (!ok) return;
     const s = JSON.stringify({cur, step, black: body.classList.contains('black')});
     if (s === sent) return;
     sent = s;
-    fetch(RELAY, {method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify({c, state: JSON.parse(s)})}).catch(() => {});
+    publish(T.st, s).catch(() => {});
   }
   return {state};
 })();
