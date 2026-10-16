@@ -33,6 +33,13 @@
     Le due finestre si comandano a vicenda (postMessage). Serve l'Apple TV come "monitor separato":
     presentazione a tutto schermo sul televisore, vista relatore sul MacBook.
 
+  TELECOMANDO iPHONE (online, attraverso la funzione api/telecomando.js + Upstash Redis su Vercel)
+    MacBook: https://openday-ten.vercel.app/?canale=CODICE      (va bene anche il file locale + internet)
+    iPhone:  https://openday-ten.vercel.app/?telecomando=CODICE (stesso CODICE: 6-64 lettere/numeri)
+    L'iPhone mostra Avanti / Indietro / Schermo nero + cosa c'è a schermo, cosa arriva dopo, la traccia.
+    Ritardo tipico 0,2–0,4 s. Spia nei comandi della presentazione: verde collegato, ambra no.
+    Se la rete cade, tastiera e telecomando Bluetooth continuano a funzionare.
+
   COMANDI
     Avanti ........ → · Spazio · Pag↓ · Invio · clic · pulsante giallo · telecomando
     Indietro ...... ← · Pag↑            Schermo intero  F
@@ -549,6 +556,30 @@ body.relatore #pres{
 #pLink.off{background:#5A4A1E;color:#FFE7A8}
 #pBlack{display:none;padding:4px 12px;border-radius:12px;font-size:14px;background:#000;color:#fff;border:1px solid #556}
 #pBlack.on{display:inline-block}
+#pres footer button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+
+/* telecomando su iPhone: stessa vista, impaginata in verticale con un grande pulsante Avanti */
+body.tele #pres{
+  grid-template-columns:1fr;grid-template-rows:auto auto auto auto 1fr;gap:10px;height:100dvh;
+  padding:max(12px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom));
+}
+body.tele #pres header{flex-wrap:wrap;gap:6px 12px;font-size:14px}
+body.tele #pres header b{width:100%;font-size:15px}
+body.tele #pres .card{padding:14px 16px;border-radius:14px}
+body.tele #pres h4{font-size:11px;margin-bottom:6px}
+body.tele #pNow{font-size:24px;margin-bottom:12px}
+body.tele #pSay{font-size:18px}
+body.tele #pNext{font-size:22px;margin-bottom:8px}
+body.tele #pNextSay{font-size:16px}
+body.tele #pSteps li{font-size:12px;padding:5px 9px}
+body.tele #pres footer{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr auto;gap:10px}
+body.tele #pres footer #pGo{grid-column:1/-1;grid-row:1;min-height:140px;display:flex;align-items:center;justify-content:center;font-size:36px;border-radius:20px}
+body.tele #pres footer #pPrev,body.tele #pres footer #pBlk{grid-row:2;font-size:18px;padding:16px}
+
+/* spia del telecomando nei comandi della presentazione (ambra = non collegato, verde = collegato) */
+#rstat{display:none;width:12px;height:12px;border-radius:50%;background:#E5A93B;box-shadow:0 0 10px currentColor}
+body.remote #rstat{display:block}
+body.remote-on #rstat{background:#3BC47A}
 
 @media (prefers-reduced-motion:reduce){.scene.is-active .cam{transform:none}#grain{animation:none}}
 </style>
@@ -845,6 +876,7 @@ body.relatore #pres{
 <div id="hint"><kbd>→</kbd> <kbd>spazio</kbd> o clic: avanti · <kbd>F</kbd> schermo intero · <kbd>M</kbd> musica · <kbd>H</kbd> aiuto</div>
 <nav id="ui" aria-label="Comandi presentazione">
   <button id="prev" tabindex="-1" aria-label="Indietro"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <span id="rstat" title="telecomando iPhone"></span>
   <div id="dots"></div>
   <button id="mus" tabindex="-1" aria-label="Musica"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="wv" d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/><path class="x" d="M17 9l5 6M22 9l-5 6"/></svg></button>
   <button id="rel" tabindex="-1" aria-label="Vista relatore"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 8.5h6M7 11.5h10M9 20h6M12 16v4"/></svg></button>
@@ -862,6 +894,7 @@ body.relatore #pres{
       <dt>Schermo nero</dt><dd><kbd>B</kbd> oppure <kbd>.</kbd></dd>
       <dt>Musica</dt><dd><kbd>M</kbd> muto · <kbd>+</kbd> <kbd>−</kbd> volume</dd>
       <dt>Vista relatore</dt><dd><kbd>R</kbd> apre la finestra per il MacBook</dd>
+      <dt>Telecomando iPhone</dt><dd>Mac: <kbd>?canale=CODICE</kbd> · iPhone: <kbd>?telecomando=CODICE</kbd></dd>
       <dt>Ricomincia</dt><dd><kbd>Home</kbd></dd>
     </dl>
     <p>Per provare una scena: aggiungi #numero all’indirizzo (es. #6 = slide 5).</p>
@@ -882,25 +915,62 @@ const scenes = $$('.scene');
 const A = window.ASSETS || {img: {}, video: null};
 const ANIM = '.rise,.words,.track,.scatter,.streak,.flash,.draw,.grow,.subj,.plate,.lum,.gleam,.halo,.wipe,.arrow,.pbeam,.phoneglow,.startbtn';
 
-// stessa pagina aperta con ?relatore → solo la vista relatore, niente animazioni, video o audio
-if (/[?&]relatore\b/.test(location.search)) { presenter(); return; }
+// telecomando iPhone: relay /api/telecomando (funzione Vercel + Upstash Redis).
+// Online usa il relay dello stesso sito; da file locale usa quello pubblicato. ?relay= solo per le prove.
+const QS = new URLSearchParams(location.search);
+const RELAY = QS.get('relay') || (location.protocol === 'https:' ? '/api/telecomando' : 'https://openday-ten.vercel.app/api/telecomando');
+
+// stessa pagina aperta con ?relatore (finestra sul Mac) o ?telecomando=CANALE (iPhone)
+// → solo la vista relatore, niente animazioni, video o audio
+if (QS.has('relatore') || QS.has('telecomando')) { presenter(); return; }
 
 /* ═════════ VISTA RELATORE ═════════
    Legge data-show / data-say delle scene e mostra: cosa c'è a schermo, cosa arriva alla
    prossima pressione, la frase della traccia. Avanti/indietro qui comandano la presentazione. */
 function presenter() {
+  const tele = QS.get('telecomando');
   body.classList.add('relatore');
-  document.title = 'Relatore · Open Day';
+  body.classList.toggle('tele', !!tele);
+  document.title = (tele ? 'Telecomando' : 'Relatore') + ' · Open Day';
   $('#pres').innerHTML = `
-    <header><b>Vista relatore · Open Day</b><span id="pBlack">schermo nero</span><span id="pSlide"></span>
+    <header><b>${tele ? 'Telecomando' : 'Vista relatore'} · Open Day</b><span id="pBlack">schermo nero</span><span id="pSlide"></span>
       <span id="pClock"></span><span id="pTimer">00:00</span><span id="pLink" class="off">in attesa della presentazione</span></header>
     <section class="card"><h4>Ora a schermo</h4><div id="pNow">—</div><h4>Da dire ora</h4><div id="pSay"></div></section>
     <section class="card next"><h4>Alla prossima pressione</h4><div id="pNext">—</div><div id="pNextSay"></div></section>
     <ol id="pSteps"></ol>
     <footer><button id="pPrev">← indietro</button><button id="pBlk">schermo nero</button><button id="pGo">avanti →</button></footer>`;
   const opener = window.opener;
-  const send = msg => { try { if (opener) opener.postMessage(Object.assign({od: 'cmd'}, msg), '*'); } catch (e) {} };
-  const hello = () => { try { if (opener) opener.postMessage({od: 'hello'}, '*'); } catch (e) {} };
+  let send, hello;
+  if (tele) {
+    // iPhone → relay → presentazione. Lo stato si rilegge ogni secondo, ogni 250 ms subito dopo una pressione.
+    let fast = 0, lastTap = 0;
+    send = msg => {
+      const t = performance.now();
+      if (t - lastTap < 350) return;                  // niente doppi tocchi involontari
+      lastTap = t; fast = t + 2500;
+      fetch(RELAY, {method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify({c: tele, cmd: msg.cmd})})
+        .then(r => { if (!r.ok) throw 0; })
+        .catch(() => { const pl = $('#pLink'); pl.classList.add('off'); pl.textContent = 'comando NON inviato: controlla la rete'; });
+    };
+    (async function loop() {
+      try {
+        const r = await fetch(`${RELAY}?ruolo=remote&c=${encodeURIComponent(tele)}`, {cache: 'no-store'});
+        const d = await r.json();
+        // la presentazione ripubblica lo stato almeno ogni 10 s: se è più vecchio, non è collegata
+        if (d.state && d.now - d.state.t < 25000) render(d.state);
+      } catch (e) {}
+      setTimeout(loop, performance.now() < fast ? 250 : 1000);
+    })();
+    hello = () => {};
+    // lo schermo dell'iPhone non deve spegnersi durante l'intervento
+    let lock = null;
+    const wakeUp = async () => { try { if ('wakeLock' in navigator && !lock) { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); } } catch (e) {} };
+    document.addEventListener('click', wakeUp);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') wakeUp(); });
+  } else {
+    send = msg => { try { if (opener) opener.postMessage(Object.assign({od: 'cmd'}, msg), '*'); } catch (e) {} };
+    hello = () => { try { if (opener) opener.postMessage({od: 'hello'}, '*'); } catch (e) {} };
+  }
   const pick = (a, k) => a[Math.min(k, a.length - 1)] || '';
   const info = i => {
     const s = scenes[i];
@@ -957,7 +1027,8 @@ function presenter() {
     if (gap > 2000) hello();                          // battito: la presentazione risponde con lo stato
     if (gap > 5000) {
       const pl = $('#pLink'); pl.classList.add('off');
-      pl.textContent = opener ? 'in attesa della presentazione' : 'apri questa vista dalla presentazione (tasto R)';
+      pl.textContent = tele ? 'presentazione non collegata: sul Mac apri ?canale=' + tele
+        : opener ? 'in attesa della presentazione' : 'apri questa vista dalla presentazione (tasto R)';
     }
   }, 1000);
   hello();
@@ -1771,6 +1842,7 @@ function openPresenter() {
   if (!presWin) toast('il browser ha bloccato la finestra: consenti i popup');
 }
 function sendState() {
+  Relay.state();
   if (!presWin || presWin.closed) return;
   try { presWin.postMessage({od: 'state', cur, step, black: body.classList.contains('black')}, '*'); } catch (e) {}
 }
@@ -1785,6 +1857,55 @@ addEventListener('message', e => {
     else if (d.cmd === 'black') toggleBlack();
   } else sendState();                                 // "hello": la vista relatore chiede lo stato
 });
+
+/* ═════════ TELECOMANDO DALL'iPHONE ═════════
+   Sul Mac: index.html?canale=CODICE · sull'iPhone: index.html?telecomando=CODICE (stesso codice).
+   La presentazione chiede al relay ogni 300 ms se ci sono comandi nuovi e pubblica il suo stato
+   a ogni passo (e comunque ogni 10 s, così il telecomando sa che è collegata).
+   Se la rete cade, la presentazione continua a funzionare da tastiera e telecomando Bluetooth. */
+const Relay = (() => {
+  const c = QS.get('canale');
+  if (!c) return {state() {}};
+  body.classList.add('remote');
+  let seq = null, ok = null, sent = '';
+  const queue = [];
+  function status(on) {
+    if (on === ok) return;
+    ok = on;
+    body.classList.toggle('remote-on', on);
+    if (cur === 0) toast(on ? 'telecomando collegato' : 'telecomando non raggiungibile');   // avvisi solo prima di iniziare
+  }
+  (async function poll() {
+    try {
+      const r = await fetch(`${RELAY}?ruolo=show&c=${encodeURIComponent(c)}${seq === null ? '' : '&dopo=' + seq}`, {cache: 'no-store'});
+      if (!r.ok) throw 0;
+      const d = await r.json();
+      if (seq !== null) d.cmds.forEach(x => queue.push(x.cmd));
+      seq = d.seq;
+      if (!ok) sent = '';                             // appena (ri)collegati, ripubblica lo stato
+      status(true);
+      state();
+    } catch (e) { status(false); }
+    // durante avvio e attesa basta un controllo ogni 1,2 s (meno richieste al piano gratuito di Upstash)
+    setTimeout(poll, !ok ? 2000 : cur <= 1 ? 1200 : 300);
+  })();
+  // comandi arrivati insieme: eseguiti distanziati, altrimenti il filtro anti doppia pressione li scarterebbe
+  setInterval(() => {
+    const cmd = queue.shift();
+    if (!cmd) return;
+    Music.unlock();
+    if (cmd === 'next') next(); else if (cmd === 'prev') prev(); else if (cmd === 'black') toggleBlack();
+  }, 340);
+  setInterval(() => { sent = ''; state(); }, 10000);  // segnale di presenza per il telecomando
+  function state() {
+    if (!ok) return;
+    const s = JSON.stringify({cur, step, black: body.classList.contains('black')});
+    if (s === sent) return;
+    sent = s;
+    fetch(RELAY, {method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify({c, state: JSON.parse(s)})}).catch(() => {});
+  }
+  return {state};
+})();
 
 let idleT;
 addEventListener('mousemove', () => {
