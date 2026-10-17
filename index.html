@@ -581,7 +581,7 @@ body.relatore #pres{
 #pSteps li.done{color:#CFE0FF}
 #pSteps li.cur{background:var(--yellow);border-color:var(--yellow);color:#0A1F4A;font-weight:700}
 /* scaletta dell'incontro: la parte in corso è evidenziata, quelle passate si spengono */
-#pPlan{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+#pPlan{position:relative;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
 #pPlan li{display:flex;align-items:baseline;gap:16px;padding:.3em .6em;border-radius:12px;font-size:clamp(16px,2.6vh,30px);line-height:1.2;color:#AFC0E0}
 #pPlan li b{min-width:1.2em;font-variant-numeric:tabular-nums}
 #pPlan li span{flex:1}
@@ -609,8 +609,15 @@ body.tele #pres header b{width:100%;font-size:15px}
 body.tele #pres .card{padding:12px 14px;border-radius:14px}
 body.tele #pres h4{font-size:11px;margin-bottom:6px}
 body.tele #pSteps li{font-size:12px;padding:5px 9px}
-body.tele #pPlan{gap:3px}
-body.tele #pPlan li{font-size:18px;padding:7px 10px;gap:10px;border-radius:9px}
+/* sul telefono la scaletta è una "rotella": 5 righe visibili, la parte in corso scorre al centro
+   (i margini sopra e sotto, 2 righe + 2 spazi, servono a centrare anche la prima e l'ultima voce) */
+body.tele #pPlan{--row:38px;--gap:4px;gap:var(--gap);box-sizing:border-box;height:calc(var(--row) * 5 + var(--gap) * 4);
+  padding:calc(var(--row) * 2 + var(--gap) * 2) 0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 26%,#000 74%,transparent 100%);
+  mask-image:linear-gradient(to bottom,transparent 0,#000 26%,#000 74%,transparent 100%)}
+body.tele #pPlan::-webkit-scrollbar{display:none}
+body.tele #pPlan li{flex-shrink:0;box-sizing:border-box;height:var(--row);align-items:center;font-size:18px;padding:0 10px;gap:10px;border-radius:9px;white-space:nowrap}
+body.tele #pPlan li span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 body.tele #pres footer{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr auto;gap:10px}
 body.tele #pres footer #pGo{grid-column:1/-1;grid-row:1;min-height:96px;display:flex;align-items:center;justify-content:center;font-size:36px;border-radius:20px}
 body.tele #pres footer #pPrev,body.tele #pres footer #pBlk{grid-row:2;font-size:18px;padding:16px}
@@ -1194,7 +1201,7 @@ function presenter() {
     const same = scenes.map((s, j) => j).filter(j => +scenes[j].dataset.slide === sl);
     return same.length > 1 ? `slide ${sl} · scena ${same.indexOf(i) + 1} di ${same.length}` : `slide ${sl} di ${LAST}`;
   };
-  let last = 0, t0 = 0;
+  let last = 0, t0 = 0, planReady = false;
   function render(d) {
     last = performance.now();
     const pl = $('#pLink'); pl.textContent = 'collegata'; pl.classList.remove('off');
@@ -1204,7 +1211,10 @@ function presenter() {
     $('#pSlide').textContent = where(d.cur);
     const sl = +scenes[d.cur].dataset.slide;
     $$('#pPlan li').forEach((li, j) => { li.className = j + 1 < sl ? 'done' : j + 1 === sl ? 'cur' : ''; });
-    const pc = $('#pPlan li.cur'); if (pc) pc.scrollIntoView({block: 'nearest'});
+    // la voce in corso scorre al centro della scaletta (avvio → prima voce, nero finale → ultima)
+    const pp = $('#pPlan'), pli = pp.children[Math.min(Math.max(sl, 1), SCALETTA.length) - 1];
+    pp.scrollTo({top: pli.offsetTop - (pp.clientHeight - pli.offsetHeight) / 2, behavior: planReady ? 'smooth' : 'auto'});
+    planReady = true;
     const ol = $('#pSteps'); ol.textContent = '';
     for (let j = 0; j <= I.max; j++) {
       const li = document.createElement('li');
@@ -2131,15 +2141,28 @@ const Tube = (() => {
   const msg = t => { box.querySelector('.tube-msg').textContent = t || ''; };
   $('.tube-end', box).style.backgroundImage = `url("https://i.ytimg.com/vi/${YT_ID}/maxresdefault.jpg")`;
   let player = null, ready = false, want = false, check = null;
+  // YouTube accende da solo i sottotitoli generati automaticamente (traccia "asr"): cc_load_policy:0 non
+  // basta, quindi si spegne la traccia e si scarica il modulo sottotitoli quando il player lo carica.
+  // Al primo avvio la traccia arriva qualche istante DOPO lo stato PLAYING: si ricontrolla per 4 secondi.
+  // Si agisce solo se c'è una traccia attiva (unloadModule fa scattare onApiChange: niente giri a vuoto).
+  const noCaptions = () => {
+    let t = null;
+    try { t = player.getOption('captions', 'track'); } catch (e) {}
+    if (!t || !t.languageCode) return;
+    try { player.setOption('captions', 'track', {}); } catch (e) {}
+    try { player.unloadModule('captions'); player.unloadModule('cc'); } catch (e) {}
+  };
+  const noCaptionsSoon = () => [0, 300, 800, 1500, 2500, 4000].forEach(ms => setTimeout(noCaptions, ms));
   window.onYouTubeIframeAPIReady = () => {
     player = new YT.Player('ytplayer', {
       videoId: YT_ID,
-      playerVars: {controls: 0, disablekb: 1, rel: 0, iv_load_policy: 3, playsinline: 1, enablejsapi: 1, fs: 0,
+      playerVars: {controls: 0, disablekb: 1, rel: 0, iv_load_policy: 3, cc_load_policy: 0, playsinline: 1, enablejsapi: 1, fs: 0,
                    modestbranding: 1, ...(location.origin.startsWith('http') ? {origin: location.origin} : {})},
       events: {
-        onReady: () => { ready = true; if (want) start(); },
+        onReady: () => { ready = true; noCaptions(); if (want) start(); },
+        onApiChange: noCaptions,
         onStateChange: e => {
-          if (e.data === 1) { box.classList.add('playing'); box.classList.remove('ended'); msg(''); }
+          if (e.data === 1) { noCaptionsSoon(); box.classList.add('playing'); box.classList.remove('ended'); msg(''); }
           else if (e.data === 0) box.classList.add('ended');
         },
         onError: () => msg('video non disponibile: serve internet e la presentazione aperta dal sito')
