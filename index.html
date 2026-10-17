@@ -11,30 +11,32 @@
   SCALETTA (una pressione = un passo)
     0  avvio ............ schermo nero con "Open Day": il primo clic attiva schermo intero + audio
     1  attesa ........... video delle mani in loop + titolo "Open Day" a cicli + musica di sottofondo
-    2  Campus Sacra Famiglia
-    3  le direzioni educative e didattiche
-    4  un percorso che cresce e orienta
-    5  gli asset della nostra formazione (slide5.jpeg: fondo con la ruota + bambini che entrano)
+    2  video «Mascotte HSF» + entrata dei ragazzi (YouTube senza distrattori: parte da solo; K pausa, U audio)
+    3  Campus Sacra Famiglia
+    4  le direzioni educative e didattiche ............ p. Gianmarco
+    5  un percorso che cresce e orienta ............... Giacomo Paris
+    6  gli asset della nostra formazione .............. Maestre + Andrea
+       (slide5.jpeg intera, entra giocando sulla brillantezza)
                                           → 2a pressione: si accende "digitale"
                                           → 3a pressione: la camera entra nella parola "digitale"
-       5·1–5·9   intervento sul digitale: OGNI PAROLA CHIAVE COMPARE SOLO ALLA PRESSIONE
+       6·1–6·9   intervento sul digitale: OGNI PAROLA CHIAVE COMPARE SOLO ALLA PRESSIONE
                  (nessuna comparsa a tempo, così voce e schermo restano allineati):
                  digitale in famiglia · Primaria (iMac, laboratorio) e Secondaria (iMac + iPad, laboratorio
                  e classe) · Cittadinanza Digitale · da ludico a didattico · e l'intelligenza artificiale? ·
                  il nuovo fuoco (padre Benanti, Festival della Mente di Sarzana) · scalda / brucia ·
                  supervisione umana · la Galassia delle web app didattiche (solo il concetto)
-    6  iscrizioni entro il 6 novembre (conto alla rovescia automatico)
-    7  visitare il nostro campus
+    7  iscrizioni entro il 6 novembre (conto alla rovescia automatico) ... Andrea
+    8  visitare il nostro campus ...................... Lodovico
        nero finale
 
   VISTA RELATORE (tasto R)
-    Apre una seconda finestra con: cosa c'è ora a schermo, cosa compare alla prossima pressione,
-    la frase della traccia da dire, l'elenco dei passi della scena, orologio e cronometro.
+    Apre una seconda finestra con: la scaletta dell'incontro (parte in corso evidenziata, con chi parla),
+    l'elenco dei passi della scena, orologio e cronometro. Il telecomando iPhone mostra la stessa vista.
     Le due finestre si comandano a vicenda (postMessage). Serve l'Apple TV come "monitor separato":
     presentazione a tutto schermo sul televisore, vista relatore sul MacBook.
 
   TELECOMANDO iPHONE (nessun account, nessuna configurazione, nessun server nostro)
-    MacBook: https://openday-ten.vercel.app/?canale=CODICE      (va bene anche il file locale + internet)
+    MacBook: https://openday-ten.vercel.app/?canale=CODICE      (dal sito: da file locale il video YouTube non parte)
     iPhone:  https://openday-ten.vercel.app/?telecomando=CODICE (stesso CODICE: 6-48 lettere/numeri, - o _)
     L'iPhone mostra Avanti / Indietro / Schermo nero + cosa c'è a schermo, cosa arriva dopo, la traccia,
     e quante "vie" sono attive. Ogni messaggio viaggia IN PARALLELO su 4 relay pubblici: ntfy.sh e i
@@ -301,7 +303,25 @@ body[data-mood=family] #cloud{opacity:1}
 .arrow.on .pulse{animation:pulse 3.4s ease-in-out infinite;animation-delay:calc(var(--base) + var(--d,0s) + 2.2s)}
 @keyframes pulse{0%{stroke-dashoffset:.05;opacity:0}10%{opacity:.9}88%{opacity:.9}100%{stroke-dashoffset:-1;opacity:0}}
 
-/* 2 · Campus Sacra Famiglia al centro, con una leggera pulsazione */
+/* 2 · video YouTube senza distrattori
+   IFrame API con controls:0 (niente barra, ingranaggio, logo, schermo intero), rel:0, iv_load_policy:3;
+   l'iframe non riceve mouse/tocchi (niente titolo cliccabile, condividi, "Guarda su YouTube");
+   è più ALTO del riquadro: il video 16:9 resta al centro e la barra del titolo che YouTube mostra
+   all'avvio finisce nella fascia nera tagliata via; copertina nostra opaca finché non parte,
+   copertura a fine video (via i video correlati). */
+.tube{position:absolute;left:295px;top:90px;width:1330px;height:900px;border-radius:22px;overflow:hidden;background:#000;opacity:0;
+  box-shadow:0 30px 90px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.12),0 0 80px rgba(90,160,255,.25)}
+.tube.on{animation:fadein 1s ease both;animation-delay:calc(var(--base) + var(--d,0s))}
+/* il video Mascotte HSF è 3:2 dentro un 16:9 con bande nere già nel file: il riquadro (1330×900) mostra solo
+   l'immagine, il player resta 1600 di larghezza e sborda di 135px per lato */
+.tube iframe{position:absolute;left:-135px;top:-90px;width:1600px;height:1080px;border:0;pointer-events:none}
+.tube-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .6s ease}
+.tube.playing .tube-poster{opacity:0}
+.tube-end{position:absolute;inset:0;background:#02081A center/cover no-repeat;opacity:0;transition:opacity .5s ease;pointer-events:none}
+.tube.ended .tube-end{opacity:.97}
+.tube-msg{position:absolute;left:0;right:0;bottom:28px;margin:0;text-align:center;font-size:26px;color:rgba(255,255,255,.9);text-shadow:0 2px 12px #000}
+
+/* 3 · Campus Sacra Famiglia al centro, con una leggera pulsazione */
 .ctitle{position:absolute;left:0;right:0;top:150px;display:flex;justify-content:center;text-align:center}
 .pulse2{animation:pulse2 3.2s ease-in-out 2.4s infinite;transform-origin:50% 60%}
 @keyframes pulse2{
@@ -548,24 +568,27 @@ body.help-on #help{opacity:1;pointer-events:auto;cursor:default}
 body.relatore{cursor:default;background:#0B1220;overflow:auto}
 body.relatore > :not(#pres){display:none!important}
 body.relatore #pres{
-  display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:auto 1fr auto auto;gap:16px;
+  display:grid;grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr) auto auto;gap:16px;
   height:100vh;padding:20px 24px;box-sizing:border-box;color:#EAF0FF;
 }
 #pres header{grid-column:1/-1;display:flex;gap:20px;align-items:center;font-size:18px;color:#9FB2D8}
 #pres header b{color:#fff;font-size:20px;margin-right:auto}
 #pres header span{font-variant-numeric:tabular-nums}
 #pres .card{background:#121C33;border:1px solid #23314F;border-radius:18px;padding:22px 26px;overflow:auto}
-#pres .card.next{border-color:rgba(248,216,48,.65)}
 #pres h4{margin:0 0 10px;font-size:14px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#7F93BD}
-#pNow{font-size:40px;font-weight:700;line-height:1.15;color:#fff;margin-bottom:28px}
-#pSay{font-size:30px;line-height:1.35;color:#CFE0FF}
-#pNext{font-size:36px;font-weight:700;line-height:1.2;color:var(--yellow);margin-bottom:20px}
-#pNextSay{font-size:24px;line-height:1.35;color:#AFC0E0}
-#pNext small{display:block;font-size:15px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#9FB2D8;margin-bottom:6px}
 #pSteps{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
 #pSteps li{padding:8px 14px;border-radius:10px;background:#121C33;border:1px solid #23314F;font-size:16px;color:#7F93BD}
 #pSteps li.done{color:#CFE0FF}
 #pSteps li.cur{background:var(--yellow);border-color:var(--yellow);color:#0A1F4A;font-weight:700}
+/* scaletta dell'incontro: la parte in corso è evidenziata, quelle passate si spengono */
+#pPlan{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+#pPlan li{display:flex;align-items:baseline;gap:16px;padding:.3em .6em;border-radius:12px;font-size:clamp(16px,2.6vh,30px);line-height:1.2;color:#AFC0E0}
+#pPlan li b{min-width:1.2em;font-variant-numeric:tabular-nums}
+#pPlan li span{flex:1}
+#pPlan li em{font-style:normal;font-size:.8em;color:#9FB2D8;text-align:right}
+#pPlan li.done,#pPlan li.done em{color:#4E5F84}
+#pPlan li.cur{background:var(--yellow);color:#0A1F4A;font-weight:700}
+#pPlan li.cur em{color:#0A1F4A}
 #pres footer{grid-column:1/-1;display:flex;gap:14px}
 #pres footer button{all:unset;cursor:pointer;flex:1;text-align:center;padding:18px;border-radius:14px;font-size:22px;font-weight:700;background:#1B2A4A;color:#fff}
 #pres footer #pGo{flex:2;background:var(--yellow);color:#0A1F4A}
@@ -576,22 +599,20 @@ body.relatore #pres{
 #pBlack.on{display:inline-block}
 #pres footer button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
-/* telecomando su iPhone: stessa vista, impaginata in verticale con un grande pulsante Avanti */
+/* telecomando su iPhone: stessa vista, impaginata in verticale: scaletta e, sotto, un grande pulsante Avanti */
 body.tele #pres{
-  grid-template-columns:1fr;grid-template-rows:auto auto auto auto 1fr;gap:10px;height:100dvh;
+  grid-template-columns:1fr;grid-template-rows:auto auto auto 1fr;gap:10px;height:100dvh;
   padding:max(12px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom));
 }
 body.tele #pres header{flex-wrap:wrap;gap:6px 12px;font-size:14px}
 body.tele #pres header b{width:100%;font-size:15px}
-body.tele #pres .card{padding:14px 16px;border-radius:14px}
+body.tele #pres .card{padding:12px 14px;border-radius:14px}
 body.tele #pres h4{font-size:11px;margin-bottom:6px}
-body.tele #pNow{font-size:24px;margin-bottom:12px}
-body.tele #pSay{font-size:18px}
-body.tele #pNext{font-size:22px;margin-bottom:8px}
-body.tele #pNextSay{font-size:16px}
 body.tele #pSteps li{font-size:12px;padding:5px 9px}
+body.tele #pPlan{gap:3px}
+body.tele #pPlan li{font-size:18px;padding:7px 10px;gap:10px;border-radius:9px}
 body.tele #pres footer{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr auto;gap:10px}
-body.tele #pres footer #pGo{grid-column:1/-1;grid-row:1;min-height:140px;display:flex;align-items:center;justify-content:center;font-size:36px;border-radius:20px}
+body.tele #pres footer #pGo{grid-column:1/-1;grid-row:1;min-height:96px;display:flex;align-items:center;justify-content:center;font-size:36px;border-radius:20px}
 body.tele #pres footer #pPrev,body.tele #pres footer #pBlk{grid-row:2;font-size:18px;padding:16px}
 
 /* spia del telecomando nei comandi della presentazione (ambra = non collegato, verde = collegato) */
@@ -648,8 +669,22 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- ═══ 2 · CAMPUS: titolo al centro che pulsa, bambini più piccoli sotto ═══ -->
-  <section class="scene" data-mood="deck" data-slide="2"
+  <!-- ═══ 2 · VIDEO «Mascotte HSF» (YouTube senza distrattori, parte da solo) ═══ -->
+  <section class="scene" data-mood="device" data-slide="2" id="s-video"
+    data-show="video «Mascotte HSF» (parte da solo)"
+    data-say="Il video parte da solo. Alla prossima pressione si passa alla slide Campus. (K = pausa · U = audio)">
+    <div class="cam">
+      <div class="tube" style="--d:.1s">
+        <div id="ytplayer"></div>
+        <img class="tube-poster" alt="" src="https://i.ytimg.com/vi/0o3AdPmgxv0/maxresdefault.jpg">
+        <div class="tube-end"></div>
+        <p class="tube-msg"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 3 · CAMPUS: titolo al centro che pulsa, bambini più piccoli sotto ═══ -->
+  <section class="scene" data-mood="deck" data-slide="3"
     data-show="Campus Sacra Famiglia (al centro, pulsa)" data-say="">
     <div class="cam">
       <div class="halo" style="--x:960px;--y:560px;--r:1500px"></div>
@@ -663,8 +698,8 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- ═══ 3 · LE DIREZIONI ═══ -->
-  <section class="scene" data-mood="deck" data-slide="3"
+  <!-- ═══ 4 · LE DIREZIONI ═══ -->
+  <section class="scene" data-mood="deck" data-slide="4"
     data-show="le direzioni · educative e didattiche" data-say="">
     <div class="cam">
       <div class="halo" style="--x:1400px;--y:540px;--r:1150px"></div>
@@ -677,8 +712,8 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- ═══ 4 · UN PERCORSO ═══ -->
-  <section class="scene" data-mood="deck" data-slide="4"
+  <!-- ═══ 5 · UN PERCORSO ═══ -->
+  <section class="scene" data-mood="deck" data-slide="5"
     data-show="un percorso · che cresce e orienta" data-say="">
     <div class="cam">
       <div class="halo" style="--x:1390px;--y:560px;--r:1150px"></div>
@@ -702,8 +737,8 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- ═══ 5 · GLI ASSET (slide5.jpeg intera: entra giocando solo sulla brillantezza · poi "digitale") ═══ -->
-  <section class="scene" data-mood="deck" data-slide="5" data-exit="zoom"
+  <!-- ═══ 6 · GLI ASSET (slide5.jpeg intera: entra giocando solo sulla brillantezza · poi "digitale") ═══ -->
+  <section class="scene" data-mood="deck" data-slide="6" data-exit="zoom"
     data-show="gli asset della nostra formazione (l’immagine si illumina)|la ruota accende «digitale»"
     data-say="|Qui inizia il tuo intervento. Alla prossima pressione la camera entra nella parola «digitale».">
     <div class="cam"><div class="zoomer" style="transform-origin:1716px 324px">
@@ -722,8 +757,8 @@ body.remote-on #rstat{background:#3BC47A}
 
   <!-- ═══════════ INTERVENTO SUL DIGITALE: ogni parola chiave = una pressione ═══════════ -->
 
-  <!-- 5·1 · il digitale in famiglia (2 pressioni) -->
-  <section class="scene late" data-mood="family" data-slide="5"
+  <!-- 6·1 · il digitale in famiglia (2 pressioni) -->
+  <section class="scene late" data-mood="family" data-slide="6"
     data-show="come gestire il digitale in famiglia?|è una sfida difficile contenerlo?"
     data-say="Come gestire il digitale in famiglia?|È una sfida difficile contenerlo?">
     <div class="cam">
@@ -736,8 +771,8 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- 5·2 · il digitale a scuola: Primaria (iMac, laboratorio) · Secondaria (iMac + iPad, laboratorio e classe) -->
-  <section class="scene" data-mood="device" data-slide="5"
+  <!-- 6·2 · il digitale a scuola: Primaria (iMac, laboratorio) · Secondaria (iMac + iPad, laboratorio e classe) -->
+  <section class="scene" data-mood="device" data-slide="6"
     data-show="Primaria: iMac · Laboratorio — Secondaria: iMac + iPad · Laboratorio e Classe"
     data-say="In primaria il digitale si incontra in laboratorio, con l’iMac. Alla secondaria arriva l’iPad: laboratorio e classe.">
     <div class="cam">
@@ -783,8 +818,8 @@ body.remote-on #rstat{background:#3BC47A}
     <div class="flash at" style="--d:1.6s;--fx:1570px;--fy:633px"></div>
   </section>
 
-  <!-- 5·3 · Cittadinanza Digitale: il percorso per studenti e genitori -->
-  <section class="scene" data-mood="final" data-slide="5"
+  <!-- 6·3 · Cittadinanza Digitale: il percorso per studenti e genitori -->
+  <section class="scene" data-mood="final" data-slide="6"
     data-show="percorso per studenti e genitori · Cittadinanza Digitale"
     data-say="Nella nostra scuola secondaria accompagniamo studenti e genitori a un uso consapevole del digitale: è il nostro percorso di Cittadinanza Digitale.">
     <div class="cam">
@@ -795,8 +830,8 @@ body.remote-on #rstat{background:#3BC47A}
     <div class="streak" style="--d:.55s;--y:52%"></div>
   </section>
 
-  <!-- 5·4 · la sfida: da ludico a didattico (2 pressioni) -->
-  <section class="scene" data-mood="device" data-slide="5"
+  <!-- 6·4 · la sfida: da ludico a didattico (2 pressioni) -->
+  <section class="scene" data-mood="device" data-slide="6"
     data-show="la sfida · da un uso ludico|a un uso didattico"
     data-say="E lo facciamo con la sfida di passare da un uso ludico…|…a un uso didattico.">
     <div class="cam">
@@ -809,8 +844,8 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- 5·5 · e l'intelligenza artificiale? (2 pressioni) -->
-  <section class="scene" data-mood="suspense" data-bars="1" data-slide="5"
+  <!-- 6·5 · e l'intelligenza artificiale? (2 pressioni) -->
+  <section class="scene" data-mood="suspense" data-bars="1" data-slide="6"
     data-show="e come gestire l’intelligenza artificiale?|la fate usare ai vostri figli?"
     data-say="E come gestire l’intelligenza artificiale?|La fate usare ai vostri figli?">
     <div class="cam">
@@ -820,8 +855,8 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- 5·6 · il nuovo fuoco · padre Benanti, Festival della Mente di Sarzana (2 pressioni) -->
-  <section class="scene" data-mood="fire" data-bars="1" data-slide="5"
+  <!-- 6·6 · il nuovo fuoco · padre Benanti, Festival della Mente di Sarzana (2 pressioni) -->
+  <section class="scene" data-mood="fire" data-bars="1" data-slide="6"
     data-show="intelligenza artificiale · il nuovo fuoco|Padre Paolo Benanti · «Custodire il fuoco» · Festival della Mente, Sarzana"
     data-say="L’intelligenza artificiale è il nuovo fuoco nelle mani dell’uomo…|…come ha detto padre Paolo Benanti aprendo il Festival della Mente di Sarzana, il 4 settembre, con la lezione «Custodire il fuoco».">
     <div class="cam">
@@ -835,8 +870,8 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- 5·7 · scalda / brucia (2 pressioni) -->
-  <section class="scene" data-mood="fire|burn" data-bars="1" data-slide="5"
+  <!-- 6·7 · scalda / brucia (2 pressioni) -->
+  <section class="scene" data-mood="fire|burn" data-bars="1" data-slide="6"
     data-show="un fuoco che scalda|ma che può bruciare"
     data-say="Un fuoco che scalda…|…ma che può bruciare.">
     <div class="cam">
@@ -845,8 +880,8 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- 5·8 · supervisione umana (2 pressioni) -->
-  <section class="scene" data-mood="ring" data-bars="1" data-slide="5"
+  <!-- 6·8 · supervisione umana (2 pressioni) -->
+  <section class="scene" data-mood="ring" data-bars="1" data-slide="6"
     data-show="supervisione umana|perché scaldi, senza bruciare"
     data-say="La supervisione umana è fondamentale…|…perché il fuoco scaldi, senza bruciare.">
     <div class="cam">
@@ -856,8 +891,8 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- 5·9 · la Galassia delle web app didattiche: solo il concetto (4 pressioni) -->
-  <section class="scene" data-mood="galaxy" data-gx="bang|bang|map|map" data-slide="5"
+  <!-- 6·9 · la Galassia delle web app didattiche: solo il concetto (4 pressioni) -->
+  <section class="scene" data-mood="galaxy" data-gx="bang|bang|map|map" data-slide="6"
     data-show="la galassia nasce (nessuna scritta)|La Galassia delle web app didattiche|ogni stella è una web app didattica · ogni costellazione è una disciplina|171 web app · 11 costellazioni"
     data-say="Ed è per questo che, per i nostri studenti, qui a scuola abbiamo costruito…|…la Galassia delle web app didattiche.|Ogni stella è una web app didattica, ogni costellazione è una disciplina.|171 web app in 11 costellazioni: tutte progettate, costruite e verificate qui, per i nostri studenti.">
     <div class="cam">
@@ -879,8 +914,8 @@ body.remote-on #rstat{background:#3BC47A}
     <div class="flash" style="--d:.5s"></div>
   </section>
 
-  <!-- ═══ 6 · ISCRIZIONI ═══ -->
-  <section class="scene" data-mood="deck" data-slide="6"
+  <!-- ═══ 7 · ISCRIZIONI ═══ -->
+  <section class="scene" data-mood="deck" data-slide="7"
     data-show="iscrizioni · entro il 6 novembre" data-say="Fine del tuo intervento: si torna alle slide del Keynote.">
     <div class="cam">
       <div class="halo" style="--x:1460px;--y:520px;--r:1150px"></div>
@@ -894,8 +929,8 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- ═══ 7 · VISITARE ═══ -->
-  <section class="scene" data-mood="deck" data-slide="7"
+  <!-- ═══ 8 · VISITARE ═══ -->
+  <section class="scene" data-mood="deck" data-slide="8"
     data-show="visitare · il nostro campus" data-say="">
     <div class="cam">
       <div class="halo" style="--x:1150px;--y:560px;--r:1350px"></div>
@@ -908,7 +943,7 @@ body.remote-on #rstat{background:#3BC47A}
   </section>
 
   <!-- nero finale -->
-  <section class="scene" data-mood="black" data-slide="8" data-show="schermo nero finale" data-say=""></section>
+  <section class="scene" data-mood="black" data-slide="9" data-show="schermo nero finale" data-say=""></section>
 </main>
 
 <div id="flyby" aria-hidden="true"><div class="fly"><i class="trail"></i></div></div>
@@ -941,9 +976,10 @@ body.remote-on #rstat{background:#3BC47A}
       <dt>Musica</dt><dd><kbd>M</kbd> muto · <kbd>+</kbd> <kbd>−</kbd> volume</dd>
       <dt>Vista relatore</dt><dd><kbd>R</kbd> apre la finestra per il MacBook</dd>
       <dt>Telecomando iPhone</dt><dd>Mac: <kbd>?canale=CODICE</kbd> · iPhone: <kbd>?telecomando=CODICE</kbd></dd>
+      <dt>Video YouTube</dt><dd><kbd>K</kbd> pausa / riprendi · <kbd>U</kbd> attiva l’audio</dd>
       <dt>Ricomincia</dt><dd><kbd>Home</kbd></dd>
     </dl>
-    <p>Per provare una scena: aggiungi #numero all’indirizzo (es. #6 = slide 5).</p>
+    <p>Per provare una scena: aggiungi #numero all’indirizzo (es. #6 = slide 6, gli asset).</p>
   </div>
 </div>
 
@@ -959,7 +995,7 @@ const body = document.body;
 const stage = $('#stage');
 const scenes = $$('.scene');
 const A = window.ASSETS || {img: {}, video: null};
-const ANIM = '.rise,.words,.track,.scatter,.streak,.flash,.draw,.grow,.subj,.plate,.lum,.gleam,.halo,.wipe,.arrow,.pbeam,.phoneglow,.startbtn';
+const ANIM = '.rise,.words,.track,.scatter,.streak,.flash,.draw,.grow,.subj,.plate,.lum,.gleam,.halo,.wipe,.arrow,.pbeam,.phoneglow,.startbtn,.tube';
 
 // telecomando iPhone: Mac e iPhone si parlano attraverso PIÙ relay pubblici in parallelo, senza account
 // né configurazione: ntfy.sh (SSE + POST) e tre broker MQTT su WebSocket. Ogni messaggio parte su tutti;
@@ -1079,8 +1115,7 @@ function presenter() {
   $('#pres').innerHTML = `
     <header><b>${tele ? 'Telecomando' : 'Vista relatore'} · Open Day</b><span id="pBlack">schermo nero</span><span id="pSlide"></span>
       <span id="pClock"></span><span id="pTimer">00:00</span><span id="pLink" class="off">in attesa della presentazione</span></header>
-    <section class="card"><h4>Ora a schermo</h4><div id="pNow">—</div><h4>Da dire ora</h4><div id="pSay"></div></section>
-    <section class="card next"><h4>Alla prossima pressione</h4><div id="pNext">—</div><div id="pNextSay"></div></section>
+    <section class="card plan"><h4>Scaletta</h4><ol id="pPlan"></ol></section>
     <ol id="pSteps"></ol>
     <footer><button id="pPrev">← indietro</button><button id="pBlk">schermo nero</button><button id="pGo">avanti →</button></footer>`;
   const opener = window.opener;
@@ -1125,21 +1160,39 @@ function presenter() {
     send = msg => { try { if (opener) opener.postMessage(Object.assign({od: 'cmd'}, msg), '*'); } catch (e) {} };
     hello = () => { try { if (opener) opener.postMessage({od: 'hello'}, '*'); } catch (e) {} };
   }
+  // scaletta dell'incontro: la voce n corrisponde alle scene con data-slide="n"
+  const SCALETTA = [
+    ['Attesa', ''],
+    ['Video + entrata dei ragazzi', ''],
+    ['Campus', ''],
+    ['Direzioni', 'p. Gianmarco'],
+    ['Percorso', 'Giacomo Paris'],
+    ['Asset', 'Maestre + Andrea'],
+    ['Iscrizioni', 'Andrea'],
+    ['Visita alla scuola', 'Lodovico']
+  ];
+  SCALETTA.forEach(([t, w], j) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<b>${j + 1}</b><span></span><em></em>`;
+    li.querySelector('span').textContent = t;
+    li.querySelector('em').textContent = w;
+    $('#pPlan').appendChild(li);
+  });
   const pick = (a, k) => a[Math.min(k, a.length - 1)] || '';
   const info = i => {
     const s = scenes[i];
     return {
-      show: (s.dataset.show || '').split('|'), say: (s.dataset.say || '').split('|'),
+      show: (s.dataset.show || '').split('|'),
       max: Math.max(0, ...$$('[data-step]', s).map(e => +e.dataset.step))
     };
   };
-  const digital = scenes.map((s, j) => j).filter(j => scenes[j].dataset.slide === '5');
+  const LAST = Math.max(...scenes.slice(0, -1).map(s => +s.dataset.slide));
   const where = i => {
+    if (i === 0) return 'avvio';
+    if (i === scenes.length - 1) return 'fine';
     const sl = +scenes[i].dataset.slide;
-    if (sl === 0) return 'avvio';
-    if (sl === 8) return 'fine';
-    if (sl === 5) return `slide 5 · scena ${digital.indexOf(i) + 1} di ${digital.length}`;
-    return `slide ${sl} di 7`;
+    const same = scenes.map((s, j) => j).filter(j => +scenes[j].dataset.slide === sl);
+    return same.length > 1 ? `slide ${sl} · scena ${same.indexOf(i) + 1} di ${same.length}` : `slide ${sl} di ${LAST}`;
   };
   let last = 0, t0 = 0;
   function render(d) {
@@ -1149,19 +1202,9 @@ function presenter() {
     if (!t0 && d.cur >= 2) t0 = Date.now();          // il cronometro parte con la slide 2
     const I = info(d.cur), k = d.step;
     $('#pSlide').textContent = where(d.cur);
-    $('#pNow').textContent = pick(I.show, k) || '—';
-    $('#pSay').textContent = pick(I.say, k);
-    let ni = d.cur, nk = k + 1;
-    if (nk > I.max) { ni++; nk = 0; }
-    const pn = $('#pNext'), ps = $('#pNextSay');
-    pn.textContent = ''; ps.textContent = '';
-    if (ni >= scenes.length) pn.textContent = 'fine della presentazione';
-    else {
-      const N = info(ni);
-      if (ni !== d.cur) { const sm = document.createElement('small'); sm.textContent = 'nuova scena · ' + where(ni); pn.appendChild(sm); }
-      pn.appendChild(document.createTextNode(pick(N.show, nk) || '—'));
-      ps.textContent = pick(N.say, nk);
-    }
+    const sl = +scenes[d.cur].dataset.slide;
+    $$('#pPlan li').forEach((li, j) => { li.className = j + 1 < sl ? 'done' : j + 1 === sl ? 'cur' : ''; });
+    const pc = $('#pPlan li.cur'); if (pc) pc.scrollIntoView({block: 'nearest'});
     const ol = $('#pSteps'); ol.textContent = '';
     for (let j = 0; j <= I.max; j++) {
       const li = document.createElement('li');
@@ -1841,6 +1884,7 @@ function ambience() {
   body.classList.toggle('bars', s.dataset.bars === '1');
   FX.mood(m);
   if (s.id === 's-wait') { Wait.start(); Music.start(); } else { Wait.stop(); Music.stop(); }
+  if (s.id === 's-video') Tube.enter(); else Tube.leave();
   const sl = slideOf(cur);
   $$('#dots i').forEach((d, i) => {
     d.classList.toggle('cur', i + 1 === sl);
@@ -1960,6 +2004,7 @@ document.addEventListener('keydown', e => {
   else if (k === 'f' || k === 'F' || k === 'F5') { e.preventDefault(); toggleFS(); }
   else if (k === 'b' || k === 'B' || k === '.') { toggleBlack(); }
   else if (k === 'r' || k === 'R') { openPresenter(); }
+  else if ((k === 'k' || k === 'K' || k === 'u' || k === 'U') && Tube.key(k.toLowerCase())) { e.preventDefault(); }
   else if (k === 'm' || k === 'M') { mute(); }
   else if (k === '+' || k === '=') { toast(`musica ${Math.round(Music.volume(.1) * 100)}%`); }
   else if (k === '-' || k === '_') { toast(`musica ${Math.round(Music.volume(-.1) * 100)}%`); }
@@ -2067,13 +2112,71 @@ addEventListener('mousemove', () => {
   idleT = setTimeout(() => body.classList.remove('ui-on'), 2600);
 });
 
-// un indicatore per ciascuna delle 7 slide del Keynote
-for (let k = 1; k <= 7; k++) {
+// un indicatore per ciascuna slide (l'ultima scena è il nero finale)
+for (let k = 1, last = Math.max(...scenes.slice(0, -1).map(s => +s.dataset.slide)); k <= last; k++) {
   const d = document.createElement('i');
   d.title = 'Slide ' + k;
   d.addEventListener('click', e => { e.stopPropagation(); go(scenes.findIndex(s => +s.dataset.slide === k), 0); });
   $('#dots').appendChild(d);
 }
+
+/* ═════════ VIDEO YOUTUBE (slide 2) ═════════
+   Parte da solo quando si arriva sulla slide e si ferma quando si esce. Se il browser blocca
+   l'audio automatico (Safari), parte senza audio: U lo attiva. K mette in pausa / riprende.
+   YouTube non riproduce gli embed da file:// (errore 153, manca il referrer): aprire dal sito. */
+const YT_ID = '0o3AdPmgxv0';
+const Tube = (() => {
+  const box = $('#s-video .tube');
+  if (!box) return {enter() {}, leave() {}, key() {}};
+  const msg = t => { box.querySelector('.tube-msg').textContent = t || ''; };
+  $('.tube-end', box).style.backgroundImage = `url("https://i.ytimg.com/vi/${YT_ID}/maxresdefault.jpg")`;
+  let player = null, ready = false, want = false, check = null;
+  window.onYouTubeIframeAPIReady = () => {
+    player = new YT.Player('ytplayer', {
+      videoId: YT_ID,
+      playerVars: {controls: 0, disablekb: 1, rel: 0, iv_load_policy: 3, playsinline: 1, enablejsapi: 1, fs: 0,
+                   modestbranding: 1, ...(location.origin.startsWith('http') ? {origin: location.origin} : {})},
+      events: {
+        onReady: () => { ready = true; if (want) start(); },
+        onStateChange: e => {
+          if (e.data === 1) { box.classList.add('playing'); box.classList.remove('ended'); msg(''); }
+          else if (e.data === 0) box.classList.add('ended');
+        },
+        onError: () => msg('video non disponibile: serve internet e la presentazione aperta dal sito')
+      }
+    });
+    const f = box.querySelector('iframe');
+    if (f) f.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture');
+  };
+  const tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  tag.onerror = () => msg('video non disponibile senza internet');
+  document.head.appendChild(tag);
+  function start() {
+    box.classList.remove('ended');
+    player.unMute(); player.setVolume(100); player.playVideo();
+    clearTimeout(check);
+    // audio automatico bloccato dal browser: riparte muto, U riattiva l'audio
+    check = setTimeout(() => {
+      if (want && player.getPlayerState() !== 1) { player.mute(); player.playVideo(); toast('audio bloccato dal browser: premi U'); }
+    }, 2000);
+  }
+  return {
+    enter() { want = true; if (ready) start(); },
+    leave() {
+      if (!want) return;
+      want = false; clearTimeout(check);
+      if (ready) player.stopVideo();
+      box.classList.remove('playing', 'ended');
+    },
+    key(k) {
+      if (!want || !ready) return false;
+      if (k === 'k') { player.getPlayerState() === 1 ? player.pauseVideo() : player.playVideo(); return true; }
+      if (k === 'u') { player.unMute(); player.setVolume(100); toast('audio attivo'); return true; }
+      return false;
+    }
+  };
+})();
 
 /* ═════════ AVVIO ═════════ */
 function fit() {
