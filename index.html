@@ -22,8 +22,8 @@
        6·1–6·9   intervento sul digitale: OGNI PAROLA CHIAVE COMPARE SOLO ALLA PRESSIONE
                  (nessuna comparsa a tempo, così voce e schermo restano allineati):
                  cosa rappresenta oggi il digitale (un ambiente di apprendimento) · Primaria (iMac, laboratorio) e Secondaria (iMac + iPad, laboratorio
-                 e classe) · Cittadinanza Digitale · da ludico a didattico · e l'intelligenza artificiale? ·
-                 il nuovo fuoco (padre Benanti, Festival della Mente di Sarzana) · scalda / brucia ·
+                 e classe) · Cittadinanza Digitale · da ludico a didattico · il digitale è intelligenza artificiale ·
+                 il nuovo fuoco di Prometeo (padre Benanti, Festival della Mente di Sarzana) · scalda / brucia ·
                  supervisione umana · la Galassia delle web app didattiche (solo il concetto)
     7  iscrizioni entro il 6 novembre (conto alla rovescia automatico) ... Andrea
     8  visitare il nostro campus ...................... Lodovico
@@ -359,7 +359,7 @@ body[data-mood=family] #cloud{opacity:1}
 .q1{display:flex;flex-direction:column;align-items:center;transition:opacity 1s ease,transform 1s var(--ease)}
 .scene[data-st="1"] .q1{opacity:.45;transform:translateY(-30px) scale(.9)}
 .q2{font-size:84px;font-weight:300;margin-top:40px}
-.ia{font-size:84px;font-weight:300;margin-top:40px;color:#fff}
+.aibig{font-size:128px;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin:34px 0 0;color:var(--yellow);text-shadow:0 0 60px rgba(248,216,48,.35);white-space:nowrap}
 
 /* 6 · iscrizioni */
 .phoneglow{
@@ -473,7 +473,11 @@ body.vid-title .wait-card{opacity:1}
   -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
 }
 .fire .glow{position:absolute;left:0;right:0;top:0;padding:0 .04em;color:#FF8A1F;filter:blur(26px);opacity:.8;text-shadow:none;animation:flicker 2.7s infinite}
+.prom{font-size:66px;font-weight:300;font-style:italic;letter-spacing:.01em;margin:4px 0 0;color:#FFD9A8;text-shadow:0 0 40px rgba(255,140,40,.5)}
+.fq{font-size:50px;font-weight:300;line-height:1.32;margin:46px 0 0;color:#FFE9D2}
+.fq em{font-style:normal;font-weight:600;color:var(--amber)}
 .credit{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:58px}
+.fq + .credit{margin-top:44px}
 .credit::before{content:'';width:56px;height:2px;background:var(--amber);margin-bottom:18px}
 .credit b{font-size:46px;font-weight:700;color:#FFF3E0}
 .credit span{font-size:30px;font-weight:300;color:rgba(255,236,214,.82);letter-spacing:.02em}
@@ -851,25 +855,27 @@ body.remote-on #rstat{background:#3BC47A}
     </div>
   </section>
 
-  <!-- 6·5 · e l'intelligenza artificiale? (2 pressioni) -->
+  <!-- 6·5 · ponte: oggi il digitale è, in gran parte, intelligenza artificiale (2 pressioni) -->
   <section class="scene" data-mood="suspense" data-bars="1" data-slide="6"
-    data-show="e come gestire l’intelligenza artificiale?|la fate usare ai vostri figli?"
-    data-say="E come gestire l’intelligenza artificiale?|La fate usare ai vostri figli?">
+    data-show="oggi, sempre di più, il digitale è…|intelligenza artificiale"
+    data-say="E oggi, sempre di più, il digitale è…|…intelligenza artificiale. Non è un capitolo a parte: ne è ormai gran parte.">
     <div class="cam">
-      <p class="h1 lite words" style="--stag:.1s">e come gestire</p>
-      <p class="h1 words" style="--d:.35s;--stag:.1s">l’intelligenza <em class="y">artificiale</em>?</p>
-      <p class="h2 ia rise" data-step="1">la fate usare ai vostri <strong>figli</strong>?</p>
+      <p class="h2 lite words" style="--stag:.1s;margin:0 0 14px">oggi, sempre di più,</p>
+      <p class="h1 words" style="--d:.3s;--stag:.1s">il <em class="y">digitale</em> è</p>
+      <p class="aibig rise" data-step="1">intelligenza artificiale</p>
     </div>
   </section>
 
-  <!-- 6·6 · il nuovo fuoco · padre Benanti, Festival della Mente di Sarzana (2 pressioni) -->
+  <!-- 6·6 · il nuovo fuoco di Prometeo · padre Benanti, Festival della Mente di Sarzana (3 pressioni) -->
   <section class="scene" data-mood="fire" data-bars="1" data-slide="6"
-    data-show="intelligenza artificiale · il nuovo fuoco|Padre Paolo Benanti · «Custodire il fuoco» · Festival della Mente, Sarzana"
-    data-say="L’intelligenza artificiale è il nuovo fuoco nelle mani dell’uomo…|…come ha detto padre Paolo Benanti aprendo il Festival della Mente di Sarzana, il 4 settembre, con la lezione «Custodire il fuoco».">
+    data-show="il nuovo fuoco di Prometeo|amplifica il potere della tecnica · ridefinisce il nostro rapporto con il futuro|Padre Paolo Benanti · «Custodire il fuoco» · Festival della Mente, Sarzana"
+    data-say="L’intelligenza artificiale è il nuovo fuoco di Prometeo:|amplifica il potere della tecnica e ridefinisce il nostro rapporto con il futuro.|Lo ha detto padre Paolo Benanti aprendo il Festival della Mente di Sarzana, il 4 settembre, con la lezione «Custodire il fuoco».">
     <div class="cam">
       <p class="label amber rise"><span>intelligenza artificiale</span></p>
       <h2 class="fire rise" style="--d:.25s"><span class="glow" aria-hidden="true">il nuovo fuoco</span><span class="txt">il nuovo fuoco</span></h2>
-      <div class="credit rise" data-step="1">
+      <p class="prom rise" style="--d:.75s">di Prometeo</p>
+      <p class="fq rise" data-step="1">amplifica il <em>potere della tecnica</em><br>e ridefinisce il nostro rapporto con il <em>futuro</em></p>
+      <div class="credit rise" data-step="2">
         <b>Padre Paolo Benanti</b>
         <span>teologo francescano · esperto di etica dell’Intelligenza Artificiale</span>
         <span class="src">«Custodire il fuoco» · Festival della Mente · Sarzana, 4 settembre 2026</span>
