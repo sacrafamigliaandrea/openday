@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>In un minuto — le web app didattiche della Scuola Sacra Famiglia</title>
+<meta name="description" content="Le web app didattiche del Laboratorio di Informatica della Scuola Sacra Famiglia di Orzinuovi, raccontate in un minuto.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;600;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   IN UN MINUTO — dieci battute da ~6 s, una parola chiave per battuta.
+   Single-file, vanilla. Usa le clip reali di galassia-clips/ (stessa
+   cartella di galassia.html): nessun altro asset. Niente audio: parla
+   chi presenta. Testi e tempi sono nell'array BEATS in fondo.
+   NESSUN SIPARIO (copia dell'Open Day, 11/11/2026): aperto da solo parte
+   subito; dentro la presentazione (iframe) aspetta il via di index.html
+   e gli dice a che battuta è (vedi "avvio" in fondo allo script).
+   ===================================================================== */
+:root{--bg:#020806;--green:#1B6D3F;--mint:#7FE0A8;--gold:#F2C94C;--ink:#EEF7F1;--mut:#A9C9B5;
+  --head:'Lexend',system-ui,-apple-system,'Segoe UI',sans-serif;--body:'Atkinson Hyperlegible',system-ui,sans-serif;--ease:cubic-bezier(.16,1,.3,1)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+body.run{cursor:none}
+
+.beat{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s}
+.beat.on{opacity:1;visibility:visible}
+.v{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.06);transition:opacity .5s ease,transform 6s linear}
+.v.show{opacity:1;transform:scale(1)}
+.scrim{position:absolute;inset:0;background:linear-gradient(75deg,rgba(2,8,6,.78) 0,rgba(2,8,6,.5) 34%,rgba(2,8,6,.04) 68%),linear-gradient(0deg,rgba(2,8,6,.5) 0,rgba(2,8,6,0) 40%)}
+/* velo leggero: la leggibilità la danno l'ombra del testo e il fondo scuro delle etichette */
+.beat .h,.beat .k,.beat .sign{text-shadow:0 2px 30px rgba(2,8,6,.95),0 0 14px rgba(2,8,6,.7),0 1px 3px rgba(2,8,6,.85)}
+.beat .tag{background:rgba(2,8,6,.55)}
+.txt{position:absolute;left:6vw;bottom:13vh;max-width:62vw;display:flex;flex-direction:column;gap:2vh}
+.k{font-family:var(--head);font-weight:600;font-size:clamp(.8rem,1.25vw,1.5rem);letter-spacing:.26em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:.8em}
+.k i{width:2.6em;height:2px;background:var(--gold)}
+.h{font-family:var(--head);font-weight:800;font-size:clamp(2.6rem,7.6vw,9.4rem);line-height:.98;letter-spacing:-.03em;color:#fff;text-shadow:0 8px 50px rgba(0,0,0,.6)}
+.h em{font-style:normal;color:var(--mint)}
+.tags{display:flex;flex-wrap:wrap;gap:1vw;margin-top:.6vh}
+.tag{font-family:var(--head);font-weight:600;font-size:clamp(.85rem,1.3vw,1.55rem);padding:.5em 1.1em;border-radius:999px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.26);backdrop-filter:blur(8px)}
+/* entrata a cascata */
+.beat .k,.beat .h,.beat .tag,.beat .num,.beat .sign,.beat .nl li{opacity:0;transform:translateY(26px);filter:blur(8px)}
+.beat.on .k,.beat.on .h,.beat.on .tag,.beat.on .num,.beat.on .sign,.beat.on .nl li{opacity:1;transform:none;filter:none;transition:opacity .7s var(--ease),transform .8s var(--ease),filter .7s var(--ease);transition-delay:calc(var(--d,0)*1ms)}
+
+/* attualità: i titoli compaiono uno dopo l'altro */
+.news .v.show{opacity:.2}
+/* titolo lungo: il velo scuro arriva più a destra, così il testo non finisce sulla parte chiara della clip */
+.largo .scrim{background:linear-gradient(75deg,rgba(2,8,6,.8) 0,rgba(2,8,6,.62) 52%,rgba(2,8,6,.1) 86%),linear-gradient(0deg,rgba(2,8,6,.5) 0,rgba(2,8,6,0) 40%)}
+/* slide delle metodologie: sfondo molto scuro, etichette grandi su tutta la larghezza */
+.metodi .scrim{background:radial-gradient(ellipse 90% 80% at 25% 45%,#14573A 0,#0A2E1F 45%,#04120C 100%)}
+.metodi .h,.metodi .k{text-shadow:0 2px 24px rgba(2,8,6,.85)}
+.metodi .tag{background:rgba(2,8,6,.55)}
+.metodi .txt{max-width:86vw;bottom:auto;top:50%;transform:translateY(-50%)}
+.metodi .tags{gap:1.6vh 1.1vw;margin-top:2vh}
+.metodi .tag{font-size:clamp(1.05rem,2vw,2.4rem)}
+.news .scrim{background:linear-gradient(90deg,rgba(2,8,6,.94),rgba(2,8,6,.7))}
+.news .txt{max-width:88vw;bottom:auto;top:50%;transform:translateY(-50%)}
+.nl{list-style:none;display:flex;flex-direction:column;gap:2.2vh;margin-top:1vh}
+.nl li{display:flex;align-items:baseline;gap:1.6vw;font-family:var(--head);font-weight:800;font-size:clamp(1.5rem,4vw,5rem);line-height:1.05;letter-spacing:-.02em;color:#fff;padding-left:1.4vw;border-left:5px solid var(--gold)}
+.nl li small{flex:none;font-weight:600;font-size:.32em;letter-spacing:.18em;color:var(--gold);min-width:4.2em}
+
+/* etica e sicurezza */
+.etica .v.show{opacity:.22}
+.etica .scrim{background:radial-gradient(ellipse at 50% 50%,rgba(2,8,6,.5),rgba(2,8,6,.8))}
+.etica .txt{left:6vw;right:6vw;max-width:none;bottom:11vh}
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:2vw;margin-bottom:1vh}
+.num b{display:block;font-family:var(--head);font-weight:800;font-size:clamp(4rem,12vw,15rem);line-height:.9;letter-spacing:-.04em;color:var(--mint);text-shadow:0 0 60px rgba(127,224,168,.4)}
+.num:last-child b{color:#fff}
+.num span{font-family:var(--head);font-weight:600;font-size:clamp(.9rem,1.5vw,1.8rem);color:#D7EDE0}
+.etica .h{font-size:clamp(1.8rem,4.2vw,5.2rem)}
+
+/* chiusura: mosaico di clip */
+.mos{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4px}
+.mos video{width:100%;height:100%;object-fit:cover;opacity:.5}
+.fine .scrim{background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(2,8,6,.72),rgba(2,8,6,.28))}
+.fine .txt{left:0;right:0;bottom:auto;top:50%;transform:translateY(-50%);max-width:none;align-items:center;text-align:center;padding:0 6vw}
+.fine .h{font-size:clamp(2.2rem,5.8vw,7.2rem)}
+.fine .k{justify-content:center}
+.sign{font-family:var(--head);font-weight:600;font-size:clamp(.85rem,1.2vw,1.4rem);letter-spacing:.2em;text-transform:uppercase;color:var(--mut);margin-top:2vh}
+
+/* barra del tempo */
+#bar{position:fixed;left:0;right:0;top:0;height:5px;background:rgba(255,255,255,.12);z-index:9}
+#bar i{display:block;height:100%;background:var(--gold);transform-origin:left;transform:scaleX(0)}
+#clock{position:fixed;right:26px;top:20px;z-index:9;font-family:var(--head);font-weight:800;font-size:clamp(1rem,1.6vw,1.9rem);color:#fff;font-variant-numeric:tabular-nums;opacity:.85}
+#dots{position:fixed;left:6vw;bottom:6vh;z-index:9;display:flex;gap:10px}
+#dots i{width:26px;height:5px;border-radius:3px;background:rgba(255,255,255,.22);transition:background .3s}
+#dots i.on{background:var(--gold)}
+
+/* sipario */
+#curtain{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh;text-align:center;padding:6vw;
+  background:radial-gradient(ellipse at 50% 42%,#0d3d24 0,#020806 72%);transition:opacity .6s,visibility .6s}
+#curtain.off{opacity:0;visibility:hidden}
+#curtain h1{font-family:var(--head);font-weight:800;font-size:clamp(2.6rem,7vw,8rem);letter-spacing:-.03em;line-height:1}
+#curtain p{font-size:clamp(.95rem,1.3vw,1.4rem);color:var(--mut);max-width:60ch;line-height:1.6}
+.btn{font-family:var(--head);font-weight:800;font-size:clamp(1.05rem,1.6vw,1.8rem);padding:.9em 1.9em;border-radius:16px;background:var(--gold);color:#14251B;box-shadow:0 12px 40px rgba(242,201,76,.28);transition:transform .2s}
+.btn:hover{transform:translateY(-2px)}
+kbd{font-family:var(--head);font-weight:600;font-size:.85em;padding:.1em .5em;border-radius:6px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.07);color:#fff}
+#again{position:fixed;right:26px;bottom:5vh;z-index:9;display:none;gap:12px}
+body.done #again{display:flex}
+body.done{cursor:auto}
+body.embed #again{display:none!important}
+body.embed{cursor:none}
+#again a,#again button{font-family:var(--head);font-weight:600;font-size:clamp(.85rem,1.05vw,1.15rem);padding:.7em 1.2em;border-radius:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.26);color:#fff;text-decoration:none}
+@media (max-width:900px){.txt{max-width:88vw}.nums{gap:3vw}}
+</style>
+</head>
+<body>
+
+<div id="stage"></div>
+<div id="bar"><i></i></div>
+<div id="clock">69</div>
+<div id="dots"></div>
+<div id="again"><button id="replay">Rivedi</button><a href="galassia.html">Apri la Galassia completa</a></div>
+
+<script>
+(()=>{
+'use strict';
+/* ---------- contenuti: modificare qui testi, clip e tempi ----------
+   N_DPIA va allineato al portale (dpia-badges.js). clips: [nome in galassia-clips/, secondo da cui partire].
+   Le metodologie citate sono quelle realmente usate nelle web app del catalogo (WebQuest, Debate, escape room,
+   simulazioni, Casate, autovalutazione). Le notizie hanno la fonte in galassia.html (array NEWS): aggiornarle insieme. */
+const N_DPIA=182,DUR=69,CLIPDIR='galassia-clips/';
+/* Filo logico: le web app seguono la crescita dello studente, dai primi tasti alla riflessione sulla tecnologia.
+   Ogni tappa ("Prima… Poi… Infine…") porta nelle etichette le metodologie usate. */
+const BEATS=[
+  {t:0,   type:'fine', k:'Scuola Sacra Famiglia · Orzinuovi', h:'Web app didattiche che<br><em>crescono con lo studente.</em>',
+          mos:[['labirinto',2],['dettato',3],['aulamagna',3],['webquest',2],['webquest_b',3],['cyberstudent',4]]},
+  {t:4,   k:'01 · Scoprire la tastiera',  h:'Prima, <em>i tasti.</em>',   tags:['Gamification','Feedback immediato','Si gioca per la propria Casa'],
+          clips:[['labirinto',1],['labirinto_b',3]]},
+  {t:12,  k:'02 · Scrivere',              h:'Poi, <em>le parole.</em>',   tags:['Scaffolding','Tastiera guidata','Un passo alla volta'],
+          clips:[['dettato',3],['punteggiatura_b',1]]},
+  {t:20,  k:'03 · Esplorare e costruire', h:'Poi, <em>i mondi.</em>',     tags:['Ambienti di apprendimento','Didattica immersiva','Compito di realtà'],
+          clips:[['aulamagna',2.2],['golf',2],['setting',4.2]]},
+  {t:29,  type:'largo', k:'04 · Abitare la rete',       h:'Poi, <em>opportunità e rischi.</em>', tags:['WebQuest','Debate','Escape room didattica','Learning by doing',"Nei panni dell'hacker: prima l'attacco, poi la difesa"],
+          clips:[['webquest',.3],['cyberstudent_b',4],['webquest_b',2]]},
+  {t:38,  k:'05 · Riflettere sulla tecnologia', h:'Infine, <em>lo sguardo critico.</em>', tags:["L'attualità entra in classe",'Pensiero critico','Cittadinanza digitale, fino alla prova finale di terza'],
+          clips:[['cyberstudent',4.5],['crescere_b',1]]},
+  {t:46,  type:'metodi', k:'Le metodologie', h:'Si impara <em>facendo.</em>',
+          tags:['Gamification','Scaffolding','Feedback immediato','Learning by doing','Didattica immersiva','Compito di realtà','WebQuest','Debate','Escape room didattica','Simulazione'],
+          clips:[]},   // nessuna clip: le web app si sono già viste, qui parlano solo le parole
+  {t:55,  type:'etica',    k:'Lungo tutto il percorso', h:'La sicurezza <em>viene prima di tutto.</em>',
+          nums:[[0,'pubblicità'],[0,'tracciamenti'],[N_DPIA,"valutazioni d'impatto sulla privacy"]],
+          tags:["L'errore non è mai rosso",'Caratteri ad alta leggibilità','Sotto i 14 anni, nessuna IA generativa in mano ai ragazzi'],clips:[['cyberstudent_b',3]]},
+  {t:63,  type:'fine',     k:'Dalla prima lettera allo sguardo critico', h:'Vietare non basta.<br><em>Bisogna educare.</em>', sign:1,
+          mos:[['dettato_b',3],['punteggiatura_b',1],['aulamagna_b',1],['golf',2],['webquest_b',4],['labirinto_b',5]]},
+];
+
+const $=(s,r=document)=>r.querySelector(s),stage=$('#stage'),dots=$('#dots');
+const vid=(c,cls)=>`<video class="${cls}" muted playsinline loop preload="auto" src="${CLIPDIR}${c[0]}.mp4" data-t="${c[1]}"></video>`;
+const head=b=>`<div class="k" style="--d:80"><i></i>${b.k}</div><h2 class="h" style="--d:180">${b.h}</h2>`;
+const tags=b=>`<div class="tags">${(b.tags||[]).map((x,i)=>`<span class="tag" style="--d:${700+i*320}">${x}</span>`).join('')}</div>`;
+BEATS.forEach((b,i)=>{
+  const e=document.createElement('section');e.className='beat '+(b.type||'');
+  if(b.type==='news')e.innerHTML=`${b.clips.map(c=>vid(c,'v')).join('')}<div class="scrim"></div><div class="txt"><div class="k" style="--d:80"><i></i>${b.k}</div>
+    <ol class="nl">${b.news.map((n,j)=>`<li style="--d:${400+j*1250}"><small>${n[0]}</small>${n[1]}</li>`).join('')}</ol></div>`;
+  else if(b.type==='etica')e.innerHTML=`${b.clips.map(c=>vid(c,'v')).join('')}<div class="scrim"></div><div class="txt"><div class="k" style="--d:80"><i></i>${b.k}</div>
+    <div class="nums">${b.nums.map((n,j)=>`<div class="num" style="--d:${250+j*350}"><b data-n="${n[0]}">${n[0]}</b><span>${n[1]}</span></div>`).join('')}</div>
+    <h2 class="h" style="--d:1500">${b.h}</h2>${tags(b).replace(/--d:(\d+)/g,(_,d)=>'--d:'+(+d+1500))}</div>`;
+  else if(b.type==='fine')e.innerHTML=`<div class="mos">${b.mos.map(c=>vid(c,'')).join('')}</div><div class="scrim"></div><div class="txt">${head(b)}
+    ${b.sign?'<div class="sign" style="--d:1500">Scuola Sacra Famiglia · Orzinuovi</div>':''}</div>`;
+  else e.innerHTML=`${b.clips.map(c=>vid(c,'v')).join('')}<div class="scrim"></div><div class="txt">${head(b)}${tags(b)}</div>`;
+  stage.appendChild(e);b.el=e;b.end=i<BEATS.length-1?BEATS[i+1].t:DUR;
+  dots.appendChild(document.createElement('i'));
+});
+
+let t=0,playing=false,cur=-1,last=0,started=false,told=-9;
+/* ---------- avvio: nessun sipario ----------
+   Aperto da solo, il film parte subito. Dentro una presentazione (iframe) aspetta il via di chi lo ospita e gli
+   racconta a che punto e', con postMessage: funziona anche da file locale, dove le due pagine non si "vedono".
+     riceve  {gm:'start'}  {gm:'stop'}  {gm:'jump',d:+1|-1}  {gm:'toggle'}  {gm:'css',css:'...'}
+     manda   {gm:'ready',beats:n}  {gm:'beat',i:battuta,done:finito} */
+const EMBED=window.self!==window.top;
+const tell=m=>{try{parent.postMessage(m,'*')}catch(e){}};
+function countUp(e,to,ms){const t0=performance.now();(function f(){const k=Math.min(1,(performance.now()-t0)/ms);e.textContent=Math.round(to*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)})()}
+function enter(i){
+  if(cur>=0){const o=BEATS[cur].el;o.classList.remove('on');o.querySelectorAll('video').forEach(v=>{v.pause();v.classList.remove('show')})}
+  cur=i;const b=BEATS[i];b.seg=0;b.el.classList.add('on');
+  [...dots.children].forEach((d,j)=>d.classList.toggle('on',j<=i));
+  const vs=[...b.el.querySelectorAll('video')];
+  vs.forEach((v,j)=>{try{v.currentTime=+v.dataset.t||0}catch(e){} if(b.type==='fine'||j===0){v.play().catch(()=>{});v.classList.add('show')}});
+  if(b.type==='etica')b.el.querySelectorAll('.num b').forEach((n,j)=>{if(+n.dataset.n>0){n.textContent='0';setTimeout(()=>countUp(n,+n.dataset.n,1200),250+j*350)}});
+}
+// la battuta è divisa in parti uguali, una per clip: a ogni cambio la clip successiva sostituisce la precedente
+function swap(b,n){const vs=b.el.querySelectorAll('.v'),o=vs[b.seg];b.seg=n;vs[n].play().catch(()=>{});vs[n].classList.add('show');o.classList.remove('show');setTimeout(()=>o.pause(),600)}
+function frame(now){
+  const dt=Math.min(.1,(now-last)/1000);last=now;
+  if(playing){t+=dt;if(t>=DUR){t=DUR;playing=false;document.body.classList.add('done');document.body.classList.remove('run')}}
+  let i=0;BEATS.forEach((b,j)=>{if(t>=b.t)i=j});if(started&&i!==cur)enter(i);
+  if(started){const b=BEATS[cur],n=b.el.querySelectorAll('.v').length;if(n>1){const g=Math.min(n-1,Math.floor((t-b.t)/(b.end-b.t)*n));if(g>b.seg)swap(b,g)}}
+  if(EMBED){const s=cur+(t>=DUR?1000:0);if(s!==told){told=s;tell({gm:'beat',i:cur,done:t>=DUR})}}
+  $('#bar i').style.transform=`scaleX(${(t/DUR).toFixed(4)})`;$('#clock').textContent=Math.max(0,Math.ceil(DUR-t));
+  requestAnimationFrame(frame);
+}
+function start(){started=true;t=0;cur>=0&&BEATS[cur].el.classList.remove('on');cur=-1;playing=true;document.body.classList.remove('done');document.body.classList.add('run')}
+// torna fermo all'inizio, a schermo vuoto (lo chiede la presentazione quando si esce dalla slide)
+function stop(){if(cur>=0){const o=BEATS[cur].el;o.classList.remove('on');o.querySelectorAll('video').forEach(v=>{v.pause();v.classList.remove('show')})}
+  started=false;playing=false;t=0;cur=-1;[...dots.children].forEach(d=>d.classList.remove('on'));document.body.classList.remove('done','run')}
+function jump(d){if(!started)return;const i=Math.max(0,Math.min(BEATS.length-1,cur+d));t=BEATS[i].t;if(t<DUR)document.body.classList.remove('done')}
+function full(){try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}}
+$('#replay').addEventListener('click',start);
+addEventListener('keydown',e=>{const k=e.key;
+  if(!started){if(k==='Enter'||k===' '){e.preventDefault();start()}return}
+  if(k===' '){e.preventDefault();if(t>=DUR)start();else{playing=!playing;const b=BEATS[cur];b.el.querySelectorAll('video').forEach(v=>v.classList.contains('show')||b.type==='fine'?(playing?v.play().catch(()=>{}):v.pause()):0)}}
+  else if(k==='ArrowRight'||k==='PageDown')jump(1);else if(k==='ArrowLeft'||k==='PageUp')jump(-1);
+  else if(k==='r'||k==='R')start();else if(k==='f'||k==='F')full()});
+addEventListener('pointermove',()=>{document.body.classList.remove('run');clearTimeout(frame._h);frame._h=setTimeout(()=>playing&&document.body.classList.add('run'),1500)});
+function toggle(){if(!started)return;if(t>=DUR){start();return}playing=!playing;const b=BEATS[cur];if(b)b.el.querySelectorAll('video').forEach(v=>v.classList.contains('show')||b.type==='fine'?(playing?v.play().catch(()=>{}):v.pause()):0)}
+if(EMBED){document.body.classList.add('embed');
+  addEventListener('message',e=>{const d=e.data;if(e.source!==parent||!d||!d.gm)return;
+    if(d.gm==='start')start();else if(d.gm==='stop')stop();else if(d.gm==='jump')jump(d.d>0?1:-1);else if(d.gm==='toggle')toggle();
+    else if(d.gm==='css'){const s=document.createElement('style');s.textContent=String(d.css||'');document.head.appendChild(s)}});
+  tell({gm:'ready',beats:BEATS.length})}
+else start();
+requestAnimationFrame(n=>{last=n;frame(n)});
+// aggancio per le verifiche: __t30.seek(s) ferma il film al secondo s
+window.__t60={seek:s=>{if(!started)start();playing=false;t=s},play:()=>{playing=true},get t(){return t}};
+})();
+</script>
+</body>
+</html>
