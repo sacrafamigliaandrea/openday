@@ -60,6 +60,8 @@
     Indietro ...... ← · Pag↑            Schermo intero  F
     Schermo nero .. B oppure .          Musica  M (muto) · + / − (volume)
     Vista relatore  R                   Ricomincia  Home     Aiuto  H
+    Ricomincia .... tasto Home · pulsante con la casa nella barra · «inizio» su telecomando e vista relatore
+                    (lì chiede conferma: secondo tocco entro 3 s). Torna alla scena d'avvio e azzera il cronometro.
     Prove ......... #n nell'indirizzo = parti dalla scena n (es. index.html#6)
     Pressioni ravvicinate (<0,3 s, doppio clic del telecomando) vengono ignorate.
 
@@ -754,6 +756,10 @@ body.relatore #pres{
 #pres footer button{all:unset;cursor:pointer;flex:1;text-align:center;padding:18px;border-radius:14px;font-size:22px;font-weight:700;background:#1B2A4A;color:#fff}
 #pres footer #pGo{flex:2;background:var(--yellow);color:#0A1F4A}
 #pres footer button:active{transform:scale(.98)}
+/* «inizio» (Home): più stretto degli altri; al primo tocco diventa ambra e chiede conferma (vedi presenter) */
+#pres footer #pHome{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:10px;padding:18px 24px;font-size:18px}
+#pres footer #pHome svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#pres footer #pHome.ask{background:#5A4A1E;color:#FFE7A8;box-shadow:inset 0 0 0 1px #FFB547}
 #pLink{padding:4px 12px;border-radius:12px;font-size:14px;background:#1E5A3A;color:#BFF5D5}
 #pLink.off{background:#5A4A1E;color:#FFE7A8}
 #pBlack{display:none;padding:4px 12px;border-radius:12px;font-size:14px;background:#000;color:#fff;border:1px solid #556}
@@ -781,9 +787,10 @@ body.tele #pPlan{--row:38px;--gap:4px;gap:var(--gap);box-sizing:border-box;heigh
 body.tele #pPlan::-webkit-scrollbar{display:none}
 body.tele #pPlan li{flex-shrink:0;box-sizing:border-box;height:var(--row);align-items:center;font-size:18px;padding:0 10px;gap:10px;border-radius:9px;white-space:nowrap}
 body.tele #pPlan li span{min-width:0;overflow:hidden;text-overflow:ellipsis}
-body.tele #pres footer{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr auto;gap:10px}
+body.tele #pres footer{display:grid;grid-template-columns:auto 1fr 1fr;grid-template-rows:1fr auto;gap:10px}
 body.tele #pres footer #pGo{grid-column:1/-1;grid-row:1;min-height:96px;display:flex;align-items:center;justify-content:center;font-size:36px;border-radius:20px}
-body.tele #pres footer #pPrev,body.tele #pres footer #pBlk{grid-row:2;font-size:18px;padding:16px}
+body.tele #pres footer #pPrev,body.tele #pres footer #pBlk{grid-row:2;font-size:17px;padding:16px 8px;white-space:nowrap}
+body.tele #pres footer #pHome{grid-row:2;grid-column:1;flex-direction:column;gap:3px;min-width:44px;padding:9px 12px;font-size:13px}
 
 /* spia del telecomando nei comandi della presentazione (ambra = non collegato, verde = collegato) */
 #rstat{display:none;width:12px;height:12px;border-radius:50%;background:#E5A93B;box-shadow:0 0 10px currentColor}
@@ -1185,6 +1192,7 @@ body.remote-on #rstat{background:#3BC47A}
 
 <div id="hint"><kbd>→</kbd> <kbd>spazio</kbd> o clic: avanti · <kbd>F</kbd> schermo intero · <kbd>M</kbd> musica · <kbd>H</kbd> aiuto</div>
 <nav id="ui" aria-label="Comandi presentazione">
+  <button id="home" tabindex="-1" aria-label="Torna all’inizio" title="Torna all’inizio"><svg viewBox="0 0 24 24"><path d="M4 11.5L12 4l8 7.5M6.5 9.8V20h11V9.8M10 20v-5.5h4V20"/></svg></button>
   <button id="prev" tabindex="-1" aria-label="Indietro"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
   <span id="rstat" title="telecomando iPhone"></span>
   <div id="dots"></div>
@@ -1207,7 +1215,7 @@ body.remote-on #rstat{background:#3BC47A}
       <dt>Telecomando iPhone</dt><dd>Mac: <kbd>?canale=CODICE</kbd> · iPhone: <kbd>?telecomando=CODICE</kbd></dd>
       <dt>Video YouTube</dt><dd><kbd>K</kbd> pausa / riprendi · <kbd>U</kbd> attiva l’audio</dd>
       <dt>Film «In un minuto»</dt><dd>parte da solo · avanti / indietro = battuta · <kbd>K</kbd> pausa / riprendi</dd>
-      <dt>Ricomincia</dt><dd><kbd>Home</kbd></dd>
+      <dt>Ricomincia</dt><dd><kbd>Home</kbd> · pulsante con la casa · «inizio» su telecomando e vista relatore</dd>
     </dl>
     <p>Per provare una scena: aggiungi #numero all’indirizzo (es. #6 = slide 6, gli asset).</p>
   </div>
@@ -1237,7 +1245,7 @@ const QS = new URLSearchParams(location.search);
 const NTFY = QS.get('ntfy') || 'https://ntfy.sh';
 const MQTT = QS.get('mqtt') === '0' ? [] :
   ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081/mqtt'];
-const COMANDI = ['next', 'prev', 'black'];
+const COMANDI = ['next', 'prev', 'black', 'home'];
 const validCode = c => /^[A-Za-z0-9_-]{6,48}$/.test(c || '');
 const ENC = new TextEncoder(), DEC = new TextDecoder();
 const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
@@ -1345,7 +1353,7 @@ function presenter() {
       <span id="pClock"></span><span id="pTimer">00:00</span><span id="pLink" class="off">in attesa della presentazione</span></header>
     <section class="card plan"><h4>Scaletta</h4><ol id="pPlan"></ol></section>
     <ol id="pSteps"></ol>
-    <footer><button id="pPrev">← indietro</button><button id="pBlk">schermo nero</button><button id="pGo">avanti →</button></footer>`;
+    <footer><button id="pHome"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5L12 4l8 7.5M6.5 9.8V20h11V9.8M10 20v-5.5h4V20"/></svg><span>inizio</span></button><button id="pPrev">← indietro</button><button id="pBlk">schermo nero</button><button id="pGo">avanti →</button></footer>`;
   const opener = window.opener;
   let send, hello;
   if (tele) {
@@ -1431,6 +1439,7 @@ function presenter() {
     const pa = $('#pAudio');
     pa.textContent = d.au === 'video' ? 'VIDEO SENZA AUDIO · sul Mac premi U' : d.au === 'gesto' ? 'AUDIO NON ATTIVO · sul Mac premi U' : '';
     pa.classList.toggle('on', !!d.au);
+    if (d.cur === 0 && t0) { t0 = 0; $('#pTimer').textContent = '00:00'; }   // tornati all'inizio: cronometro azzerato
     if (!t0 && d.cur >= 2) t0 = Date.now();          // il cronometro parte con la slide 2
     const I = info(d.cur), k = d.step;
     $('#pSlide').textContent = where(d.cur);
@@ -1471,10 +1480,19 @@ function presenter() {
     if (KN.includes(e.key)) { e.preventDefault(); if (!e.repeat) send({cmd: 'next'}); }
     else if (KP.includes(e.key)) { e.preventDefault(); if (!e.repeat) send({cmd: 'prev'}); }
     else if (e.key === 'b' || e.key === 'B' || e.key === '.') send({cmd: 'black'});
+    else if (e.key === 'Home') send({cmd: 'home'});
   });
   $('#pGo').addEventListener('click', () => send({cmd: 'next'}));
   $('#pPrev').addEventListener('click', () => send({cmd: 'prev'}));
   $('#pBlk').addEventListener('click', () => send({cmd: 'black'}));
+  // «inizio» azzera tutto: per non farlo per sbaglio durante l'intervento serve un secondo tocco entro 3 secondi
+  const ph = $('#pHome'), phTxt = $('span', ph);
+  let askT = null;
+  const unask = () => { clearTimeout(askT); askT = null; ph.classList.remove('ask'); phTxt.textContent = 'inizio'; };
+  ph.addEventListener('click', () => {
+    if (!askT) { ph.classList.add('ask'); phTxt.textContent = 'sicuro?'; askT = setTimeout(unask, 3000); return; }
+    unask(); send({cmd: 'home'});
+  });
 }
 
 /* ═════════ PARTICELLE ═════════ */
@@ -2083,6 +2101,13 @@ function toggleBlack(on) {
   body.classList.toggle('black', on === undefined ? !body.classList.contains('black') : on);
   sendState();
 }
+// HOME: riporta tutto all'inizio (scena d'avvio, primo passo, schermo acceso); musica, video e film si fermano da
+// soli in ambience(). Dal Mac: tasto Home o pulsante con la casa; da vista relatore e telecomando: comando 'home'.
+function home() {
+  body.classList.remove('help-on');
+  if (body.classList.contains('black')) toggleBlack(false);
+  go(0, 0);
+}
 function next() {
   if (!guard()) return;
   if (body.classList.contains('help-on')) { body.classList.remove('help-on'); return; }
@@ -2171,7 +2196,7 @@ document.addEventListener('keydown', e => {
   else if (k === 'm' || k === 'M') { mute(); }
   else if (k === '+' || k === '=') { toast(`musica ${Math.round(Music.volume(.1) * 100)}%`); }
   else if (k === '-' || k === '_') { toast(`musica ${Math.round(Music.volume(-.1) * 100)}%`); }
-  else if (k === 'Home') { go(0, 0); }
+  else if (k === 'Home') { home(); }
   else if (k === 'End') { go(scenes.length - 1, 0); }
   else if (k === 'h' || k === 'H' || k === '?') { body.classList.toggle('help-on'); }
   else if (k === 'Escape') { body.classList.remove('help-on'); }
@@ -2190,6 +2215,7 @@ document.addEventListener('click', e => {
 const btn = (id, fn) => $(id).addEventListener('click', e => { e.stopPropagation(); Music.unlock(); fn(); });
 btn('#next', next);
 btn('#prev', prev);
+btn('#home', home);
 btn('#fs', toggleFS);
 btn('#mus', mute);
 btn('#rel', openPresenter);
@@ -2218,6 +2244,7 @@ addEventListener('message', e => {
     if (d.cmd === 'next') next();
     else if (d.cmd === 'prev') prev();
     else if (d.cmd === 'black') toggleBlack();
+    else if (d.cmd === 'home') home();
   } else sendState();                                 // "hello": la vista relatore chiede lo stato
 });
 
@@ -2255,7 +2282,7 @@ const Relay = (() => {
       const cmd = queue.shift();
       lastRun = performance.now();
       Music.unlock();
-      if (cmd === 'next') next(); else if (cmd === 'prev') prev(); else if (cmd === 'black') toggleBlack();
+      if (cmd === 'next') next(); else if (cmd === 'prev') prev(); else if (cmd === 'black') toggleBlack(); else if (cmd === 'home') home();
       drain();
     }, Math.max(0, lastRun + 340 - performance.now()));
   }
